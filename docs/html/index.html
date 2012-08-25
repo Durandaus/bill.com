@@ -1,0 +1,310 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>billdotcom &mdash; billdotcom 0.0.1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '',
+        VERSION:     '0.0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="billdotcom 0.0.1 documentation" href="#" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="#">billdotcom 0.0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="billdotcom">
+<h1>billdotcom<a class="headerlink" href="#billdotcom" title="Permalink to this headline">¶</a></h1>
+<div class="toctree-wrapper compound">
+<ul class="simple">
+</ul>
+</div>
+<span class="target" id="module-billdotcom"></span><p>A client library for Bill.com in Python.</p>
+<p>To use this library you will need developer access. For more information please
+visit the <a class="reference external" href="http://www.bill.com/resources/developer-program">Bill.com developer page</a>.</p>
+</div>
+<div class="section" id="module-billdotcom.bill">
+<span id="bills-and-payments"></span><h1>Bills and Payments<a class="headerlink" href="#module-billdotcom.bill" title="Permalink to this headline">¶</a></h1>
+<span class="target" id="module-bill"></span><dl class="class">
+<dt id="billdotcom.bill.Bill">
+<em class="property">class </em><tt class="descclassname">billdotcom.bill.</tt><tt class="descname">Bill</tt><big>(</big><em>externalId</em>, <em>invoiceNumber</em>, <em>vendorId</em>, <em>invoiceDate</em>, <em>dueDate</em>, <em>amount</em><big>)</big><a class="reference internal" href="_modules/billdotcom/bill.html#Bill"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#billdotcom.bill.Bill" title="Permalink to this definition">¶</a></dt>
+<dd><p>This models the Bill object.</p>
+<dl class="docutils">
+<dt>Required:</dt>
+<dd>externalId (str): The developer-created ID from your system.
+invoiceNumber (str): The invoice number or identifier.
+vendorId (str): The ID of the vendor that is creating the bill.
+invoiceDate (date): The date that the invoice was billed on.
+dueDate (date): The date that the invoice must be paid by.
+amount (Decimal): The amount of money that is billed.</dd>
+<dt>Creation:</dt>
+<dd><p class="first">Create a Bill object and create it on the server side with
+with <a class="reference internal" href="#billdotcom.session.Session.create_bill" title="billdotcom.session.Session.create_bill"><tt class="xref py py-func docutils literal"><span class="pre">billdotcom.session.Session.create_bill()</span></tt></a>. For example:</p>
+<div class="last highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">Session</span><span class="p">()</span> <span class="k">as</span> <span class="n">s</span><span class="p">:</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">a</span> <span class="o">=</span> <span class="n">Bill</span><span class="p">(</span><span class="n">uuid</span><span class="p">,</span> <span class="n">invoice</span><span class="p">,</span> <span class="n">billDate</span><span class="p">,</span> <span class="n">dueDate</span><span class="p">,</span> <span class="n">amount</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">a</span><span class="p">[</span><span class="s">&#39;id&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">s</span><span class="o">.</span><span class="n">create_bill</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="module-billdotcom.session">
+<span id="sessions-and-authentication"></span><h1>Sessions and Authentication<a class="headerlink" href="#module-billdotcom.session" title="Permalink to this headline">¶</a></h1>
+<span class="target" id="module-session"></span><dl class="class">
+<dt id="billdotcom.session.Session">
+<em class="property">class </em><tt class="descclassname">billdotcom.session.</tt><tt class="descname">Session</tt><a class="reference internal" href="_modules/billdotcom/session.html#Session"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#billdotcom.session.Session" title="Permalink to this definition">¶</a></dt>
+<dd><p>This models and handles serialization of the Bill object.</p>
+<p>Your configuration should have the minimum requirements listed in <a class="reference internal" href="#module-billdotcom.config" title="billdotcom.config"><tt class="xref py py-mod docutils literal"><span class="pre">billdotcom.config</span></tt></a>.
+Sessions will time out after 35 minutes.</p>
+<p>You can use it in a with statement:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">Session</span><span class="p">():</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="c"># do stuff</span>
+</pre></div>
+</div>
+<dl class="method">
+<dt id="billdotcom.session.Session.create_bill">
+<tt class="descname">create_bill</tt><big>(</big><em>bill</em><big>)</big><a class="reference internal" href="_modules/billdotcom/session.html#Session.create_bill"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#billdotcom.session.Session.create_bill" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a Bill object on the server.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>bill: A Bill object with the required fields filled in.</dd>
+<dt>Returns:</dt>
+<dd>The newly created Bill&#8217;s ID.</dd>
+<dt>Raises:</dt>
+<dd>ServerResponseError</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="billdotcom.session.Session.create_vendor">
+<tt class="descname">create_vendor</tt><big>(</big><em>vendor</em><big>)</big><a class="reference internal" href="_modules/billdotcom/session.html#Session.create_vendor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#billdotcom.session.Session.create_vendor" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a Vendor object on the server.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>vendor: A Vendor object with the required fields filled in.</dd>
+<dt>Returns:</dt>
+<dd>The newly created Vendor&#8217;s ID.</dd>
+<dt>Raises:</dt>
+<dd>ServerResponseError</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="billdotcom.session.Session.getcurrenttime">
+<tt class="descname">getcurrenttime</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/billdotcom/session.html#Session.getcurrenttime"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#billdotcom.session.Session.getcurrenttime" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets Bill.com&#8217;s system time.</p>
+<dl class="docutils">
+<dt>Returns:</dt>
+<dd>datetime. System time as reported by Bill.com</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="billdotcom.session.Session.login">
+<tt class="descname">login</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/billdotcom/session.html#Session.login"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#billdotcom.session.Session.login" title="Permalink to this definition">¶</a></dt>
+<dd><p>Initiate a session on the server.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="billdotcom.session.Session.logout">
+<tt class="descname">logout</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/billdotcom/session.html#Session.logout"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#billdotcom.session.Session.logout" title="Permalink to this definition">¶</a></dt>
+<dd><p>Shut down a session on the server.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-billdotcom.config">
+<span id="configuration"></span><h1>Configuration<a class="headerlink" href="#module-billdotcom.config" title="Permalink to this headline">¶</a></h1>
+<p>Global definitions, configuration and logging.</p>
+<dl class="docutils">
+<dt>The default configuration file must contain the following structure:</dt>
+<dd><ul class="first last">
+<li><dl class="first docutils">
+<dt>authorization</dt>
+<dd><ul class="first last simple">
+<li>appkey: the application key from Bill.com</li>
+<li>email: your user&#8217;s email address</li>
+<li>password: your user&#8217;s password</li>
+</ul>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>organization</dt>
+<dd><ul class="first last simple">
+<li>name: the name of your organization</li>
+<li>id: the id for your organization. Obtain with the <cite>billdotcom_getorglist</cite> script.</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">The environment variable BILLDOTCOM_PREFIX can be used to control the location of
+the config file and logging directory. If it does not exist the current directory
+will be used.</p>
+</div>
+<dl class="function">
+<dt id="billdotcom.config.get_logger">
+<tt class="descclassname">billdotcom.config.</tt><tt class="descname">get_logger</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/billdotcom/config.html#get_logger"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#billdotcom.config.get_logger" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets the global logger and configures it if needed.</p>
+<p>The default handlers will write DEBUG or higher to STDERR and log INFO or higher
+to the default log file. See <a class="reference internal" href="#module-billdotcom.config" title="billdotcom.config"><tt class="xref py py-mod docutils literal"><span class="pre">billdotcom.config</span></tt></a> for more about how to change this.</p>
+<dl class="docutils">
+<dt>Example usage:</dt>
+<dd><div class="first last highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">LOG</span> <span class="o">=</span> <span class="n">get_logger</span><span class="p">()</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">LOG</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s">&quot;look, an error!&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd>
+<dt>Returns:</dt>
+<dd>Logger.</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="billdotcom.config.validate_config">
+<tt class="descclassname">billdotcom.config.</tt><tt class="descname">validate_config</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/billdotcom/config.html#validate_config"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#billdotcom.config.validate_config" title="Permalink to this definition">¶</a></dt>
+<dd><p>Ensure that the required sections exist in the config file.</p>
+<p>For proper configuration and more about the default location, see <a class="reference internal" href="#module-billdotcom.config" title="billdotcom.config"><tt class="xref py py-mod docutils literal"><span class="pre">billdotcom.config</span></tt></a>.</p>
+<dl class="docutils">
+<dt>Raises:</dt>
+<dd>ConfigurationError</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="module-billdotcom.exceptions">
+<span id="exceptions"></span><h1>Exceptions<a class="headerlink" href="#module-billdotcom.exceptions" title="Permalink to this headline">¶</a></h1>
+<p>Exceptions are defined in billdotcom for ease of use.</p>
+<dl class="exception">
+<dt id="billdotcom.exceptions.BilldotcomError">
+<em class="property">exception </em><tt class="descclassname">billdotcom.exceptions.</tt><tt class="descname">BilldotcomError</tt><big>(</big><em>message</em><big>)</big><a class="reference internal" href="_modules/billdotcom/exceptions.html#BilldotcomError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#billdotcom.exceptions.BilldotcomError" title="Permalink to this definition">¶</a></dt>
+<dd><p>The base class for billdotcom exceptions.</p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="billdotcom.exceptions.ConfigurationError">
+<em class="property">exception </em><tt class="descclassname">billdotcom.exceptions.</tt><tt class="descname">ConfigurationError</tt><big>(</big><em>message</em><big>)</big><a class="reference internal" href="_modules/billdotcom/exceptions.html#ConfigurationError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#billdotcom.exceptions.ConfigurationError" title="Permalink to this definition">¶</a></dt>
+<dd><p>An exception raised when the configuration is incorrect.</p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="billdotcom.exceptions.HTTPError">
+<em class="property">exception </em><tt class="descclassname">billdotcom.exceptions.</tt><tt class="descname">HTTPError</tt><big>(</big><em>message</em><big>)</big><a class="reference internal" href="_modules/billdotcom/exceptions.html#HTTPError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#billdotcom.exceptions.HTTPError" title="Permalink to this definition">¶</a></dt>
+<dd><p>An exception raised when an HTTP request returns with a bad code.</p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="billdotcom.exceptions.ServerResponseError">
+<em class="property">exception </em><tt class="descclassname">billdotcom.exceptions.</tt><tt class="descname">ServerResponseError</tt><big>(</big><em>message</em><big>)</big><a class="reference internal" href="_modules/billdotcom/exceptions.html#ServerResponseError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#billdotcom.exceptions.ServerResponseError" title="Permalink to this definition">¶</a></dt>
+<dd><p>An exception raised when the server reponds that a request failed.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="indices-and-tables">
+<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h1>
+<ul class="simple">
+<li><a class="reference internal" href="genindex.html"><em>Index</em></a></li>
+<li><a class="reference internal" href="py-modindex.html"><em>Module Index</em></a></li>
+<li><a class="reference internal" href="search.html"><em>Search Page</em></a></li>
+</ul>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="#">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">billdotcom</a><ul>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-billdotcom.bill">Bills and Payments</a></li>
+<li><a class="reference internal" href="#module-billdotcom.session">Sessions and Authentication</a></li>
+<li><a class="reference internal" href="#module-billdotcom.config">Configuration</a></li>
+<li><a class="reference internal" href="#module-billdotcom.exceptions">Exceptions</a></li>
+<li><a class="reference internal" href="#indices-and-tables">Indices and tables</a></li>
+</ul>
+
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/index.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="#">billdotcom 0.0.1 documentation</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, Amanda Quint, Matthew Thompson.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>
