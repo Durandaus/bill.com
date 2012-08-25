@@ -1,0 +1,259 @@
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>billdotcom.session &mdash; billdotcom 0.0.1 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/default.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.0.1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="billdotcom 0.0.1 documentation" href="../../index.html" />
+    <link rel="up" title="Module code" href="../index.html" /> 
+  </head>
+  <body>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../index.html">billdotcom 0.0.1 documentation</a> &raquo;</li>
+          <li><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for billdotcom.session</h1><div class="highlight"><pre>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">.. module:: session</span>
+<span class="sd">   :synopsis: Session management (login, logout, etc).</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">iso8601</span>
+<span class="kn">import</span> <span class="nn">uuid</span>
+<span class="kn">from</span> <span class="nn">config</span> <span class="kn">import</span> <span class="n">CONFIG</span><span class="p">,</span> <span class="n">get_logger</span>
+<span class="kn">from</span> <span class="nn">https</span> <span class="kn">import</span> <span class="n">https_post</span><span class="p">,</span> <span class="n">https_post_operation</span>
+<span class="kn">from</span> <span class="nn">exceptions</span> <span class="kn">import</span> <span class="n">BilldotcomError</span><span class="p">,</span> <span class="n">ServerResponseError</span>
+
+<div class="viewcode-block" id="Session"><a class="viewcode-back" href="../../index.html#billdotcom.session.Session">[docs]</a><span class="k">class</span> <span class="nc">Session</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;This models and handles serialization of the Bill object.</span>
+
+<span class="sd">    Your configuration should have the minimum requirements listed in :mod:`billdotcom.config`.</span>
+<span class="sd">    Sessions will time out after 35 minutes.</span>
+
+<span class="sd">    You can use it in a with statement:</span>
+
+<span class="sd">        &gt;&gt;&gt; with Session():</span>
+<span class="sd">        &gt;&gt;&gt;     # do stuff</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">session_id</span> <span class="o">=</span> <span class="bp">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">appkey</span> <span class="o">=</span> <span class="n">CONFIG</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;authentication&#39;</span><span class="p">,</span> <span class="s">&#39;appkey&#39;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__build_request__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">content</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s">&#39;appkey&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">appkey</span><span class="p">,</span>
+            <span class="s">&#39;sessionId&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">session_id</span><span class="p">,</span>
+            <span class="s">&#39;content&#39;</span><span class="p">:</span> <span class="n">content</span><span class="p">,</span>
+        <span class="p">}</span>
+
+        <span class="n">data</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="n">xmlstring</span> <span class="o">=</span> <span class="s">&quot;&quot;&quot;</span>
+<span class="s">        &lt;request version=&quot;1.0&quot; applicationkey=&quot;{{appkey}}&quot;&gt;</span>
+<span class="s">            {0}</span>
+<span class="s">        &lt;/request&gt;</span>
+<span class="s">        &quot;&quot;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">content</span><span class="p">)</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="o">**</span><span class="n">data</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">xmlstring</span>
+
+<div class="viewcode-block" id="Session.getcurrenttime"><a class="viewcode-back" href="../../index.html#billdotcom.session.Session.getcurrenttime">[docs]</a>    <span class="k">def</span> <span class="nf">getcurrenttime</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Gets Bill.com&#39;s system time.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            datetime. System time as reported by Bill.com</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">xmlstring</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__build_request__</span><span class="p">(</span><span class="s">&quot;&quot;&quot;</span>
+<span class="s">            &lt;getcurrenttime sessionId=&quot;{sessionId}&quot;&gt;</span>
+<span class="s">            &lt;/getcurrenttime&gt;</span>
+<span class="s">        &quot;&quot;&quot;</span><span class="p">)</span>
+
+        <span class="n">response</span> <span class="o">=</span> <span class="n">https_post</span><span class="p">(</span><span class="n">xmlstring</span><span class="p">)</span>
+        <span class="n">thetime</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">getElementsByTagName</span><span class="p">(</span><span class="s">&#39;currentTime&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">firstChild</span><span class="o">.</span><span class="n">data</span>
+        <span class="k">return</span> <span class="n">iso8601</span><span class="o">.</span><span class="n">parse_date</span><span class="p">(</span><span class="n">thetime</span><span class="p">)</span>
+</div>
+    <span class="k">def</span> <span class="nf">__get_result_or_fail</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">operationresults</span><span class="p">,</span> <span class="n">transaction</span><span class="p">):</span>
+        <span class="n">LOG</span> <span class="o">=</span> <span class="n">get_logger</span><span class="p">()</span>
+        <span class="n">transaction</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">transaction</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">operationresults</span><span class="p">[</span><span class="s">&#39;OK&#39;</span><span class="p">][</span><span class="n">transaction</span><span class="p">]</span>
+        <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+            <span class="n">message</span> <span class="o">=</span> <span class="n">operationresults</span><span class="p">[</span><span class="s">&#39;failed&#39;</span><span class="p">][</span><span class="n">transaction</span><span class="p">][</span><span class="s">&#39;message&#39;</span><span class="p">]</span>
+            <span class="n">LOG</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="n">ServerResponseError</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Session.create_bill"><a class="viewcode-back" href="../../index.html#billdotcom.session.Session.create_bill">[docs]</a>    <span class="k">def</span> <span class="nf">create_bill</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bill</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Creates a Bill object on the server.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            bill: A Bill object with the required fields filled in.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            The newly created Bill&#39;s ID.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ServerResponseError</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">transaction</span> <span class="o">=</span> <span class="n">uuid</span><span class="o">.</span><span class="n">uuid4</span><span class="p">()</span>
+
+        <span class="n">xmlstring</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__build_request__</span><span class="p">(</span><span class="s">&quot;&quot;&quot;</span>
+<span class="s">            &lt;operation transactionId=&quot;{transaction}&quot; sessionId=&quot;{sessionId}&quot;&gt;</span>
+<span class="s">                &lt;create_bill&gt;</span>
+<span class="s">                    {bill}</span>
+<span class="s">                &lt;/create_bill&gt;</span>
+<span class="s">            &lt;/operation&gt;</span>
+<span class="s">        &quot;&quot;&quot;</span><span class="p">,</span> <span class="n">bill</span><span class="o">=</span><span class="n">bill</span><span class="o">.</span><span class="n">xml</span><span class="p">(),</span> <span class="n">transaction</span><span class="o">=</span><span class="n">transaction</span><span class="p">)</span>
+
+        <span class="n">response</span> <span class="o">=</span> <span class="n">https_post_operation</span><span class="p">(</span><span class="n">xmlstring</span><span class="p">)</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__get_result_or_fail</span><span class="p">(</span><span class="n">response</span><span class="p">,</span> <span class="n">transaction</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">result</span><span class="o">.</span><span class="n">getElementsByTagName</span><span class="p">(</span><span class="s">&#39;id&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">firstChild</span><span class="o">.</span><span class="n">data</span>
+</div>
+<div class="viewcode-block" id="Session.create_vendor"><a class="viewcode-back" href="../../index.html#billdotcom.session.Session.create_vendor">[docs]</a>    <span class="k">def</span> <span class="nf">create_vendor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vendor</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Creates a Vendor object on the server.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            vendor: A Vendor object with the required fields filled in.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            The newly created Vendor&#39;s ID.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ServerResponseError</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">transaction</span> <span class="o">=</span> <span class="n">uuid</span><span class="o">.</span><span class="n">uuid4</span><span class="p">()</span>
+
+        <span class="n">xmlstring</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__build_request__</span><span class="p">(</span><span class="s">&quot;&quot;&quot;</span>
+<span class="s">            &lt;operation transactionId=&quot;{transaction}&quot; sessionId=&quot;{sessionId}&quot;&gt;</span>
+<span class="s">                &lt;create_vendor&gt;</span>
+<span class="s">                    {vendor}</span>
+<span class="s">                &lt;/create_vendor&gt;</span>
+<span class="s">            &lt;/operation&gt;</span>
+<span class="s">        &quot;&quot;&quot;</span><span class="p">,</span> <span class="n">vendor</span><span class="o">=</span><span class="n">vendor</span><span class="o">.</span><span class="n">xml</span><span class="p">(),</span> <span class="n">transaction</span><span class="o">=</span><span class="n">transaction</span><span class="p">)</span>
+
+        <span class="n">response</span> <span class="o">=</span> <span class="n">https_post_operation</span><span class="p">(</span><span class="n">xmlstring</span><span class="p">)</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__get_result_or_fail</span><span class="p">(</span><span class="n">response</span><span class="p">,</span> <span class="n">transaction</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">result</span><span class="o">.</span><span class="n">getElementsByTagName</span><span class="p">(</span><span class="s">&#39;id&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">firstChild</span><span class="o">.</span><span class="n">data</span>
+
+</div>
+    <span class="k">def</span> <span class="nf">__enter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">login</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span>
+
+    <span class="k">def</span> <span class="nf">__exit__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">type</span><span class="p">,</span> <span class="n">value</span><span class="p">,</span> <span class="n">traceback</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logout</span><span class="p">()</span>
+
+<div class="viewcode-block" id="Session.login"><a class="viewcode-back" href="../../index.html#billdotcom.session.Session.login">[docs]</a>    <span class="k">def</span> <span class="nf">login</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Initiate a session on the server.&quot;&quot;&quot;</span>
+
+        <span class="n">data</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s">&#39;appkey&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">appkey</span><span class="p">,</span>
+            <span class="s">&#39;email&#39;</span><span class="p">:</span> <span class="n">CONFIG</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;authentication&#39;</span><span class="p">,</span> <span class="s">&#39;email&#39;</span><span class="p">),</span>
+            <span class="s">&#39;password&#39;</span><span class="p">:</span> <span class="n">CONFIG</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;authentication&#39;</span><span class="p">,</span> <span class="s">&#39;password&#39;</span><span class="p">),</span>
+            <span class="s">&#39;orgId&#39;</span><span class="p">:</span> <span class="n">CONFIG</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s">&#39;organization&#39;</span><span class="p">,</span> <span class="s">&#39;id&#39;</span><span class="p">),</span>
+        <span class="p">}</span>
+
+        <span class="n">xmlstring</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__build_request__</span><span class="p">(</span><span class="s">&quot;&quot;&quot;</span>
+<span class="s">            &lt;login&gt;</span>
+<span class="s">                &lt;username&gt;{email}&lt;/username&gt;</span>
+<span class="s">                &lt;password&gt;{password}&lt;/password&gt;</span>
+<span class="s">                &lt;orgID&gt;{orgId}&lt;/orgID&gt;</span>
+<span class="s">            &lt;/login&gt;</span>
+<span class="s">        &quot;&quot;&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">data</span><span class="p">)</span>
+
+        <span class="n">response</span> <span class="o">=</span> <span class="n">https_post</span><span class="p">(</span><span class="n">xmlstring</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">session_id</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">getElementsByTagName</span><span class="p">(</span><span class="s">&#39;sessionId&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">firstChild</span><span class="o">.</span><span class="n">data</span>
+</div>
+<div class="viewcode-block" id="Session.logout"><a class="viewcode-back" href="../../index.html#billdotcom.session.Session.logout">[docs]</a>    <span class="k">def</span> <span class="nf">logout</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Shut down a session on the server.&quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">session_id</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">BilldotcomError</span><span class="p">(</span><span class="s">&quot;cannot logout on a session that has not logged in&quot;</span><span class="p">)</span>
+
+
+        <span class="n">xmlstring</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__build_request__</span><span class="p">(</span><span class="s">&quot;&quot;&quot;</span>
+<span class="s">            &lt;logout sessionId=&quot;{sessionId}&quot;&gt;</span>
+<span class="s">            &lt;/logout&gt;</span>
+<span class="s">        &quot;&quot;&quot;</span><span class="p">)</span>
+
+        <span class="n">https_post</span><span class="p">(</span><span class="n">xmlstring</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">session_id</span> <span class="o">=</span> <span class="bp">None</span>
+</pre></div></div></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper">
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../index.html">billdotcom 0.0.1 documentation</a> &raquo;</li>
+          <li><a href="../index.html" >Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+    <div class="footer">
+        &copy; Copyright 2012, Amanda Quint, Matthew Thompson.
+      Created using <a href="http://sphinx.pocoo.org/">Sphinx</a> 1.1.3.
+    </div>
+  </body>
+</html>
