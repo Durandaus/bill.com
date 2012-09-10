@@ -174,6 +174,122 @@ assigning amounts among individual line items.</p>
 </dl>
 </dd></dl>
 
+<span class="target" id="module-billdotcom.vendorcredit"></span><span class="target" id="module-vendorcredit"></span><dl class="class">
+<dt id="billdotcom.vendorcredit.VendorCredit">
+<em class="property">class </em><tt class="descclassname">billdotcom.vendorcredit.</tt><tt class="descname">VendorCredit</tt><big>(</big><em>ignore_required=False</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/billdotcom/vendorcredit.html#VendorCredit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#billdotcom.vendorcredit.VendorCredit" title="Permalink to this definition">¶</a></dt>
+<dd><p>This models the VendorCredit object.</p>
+<dl class="docutils">
+<dt>Required:</dt>
+<dd><table border="1" class="first last docutils">
+<colgroup>
+<col width="18%" />
+<col width="14%" />
+<col width="68%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td colspan="2"><em>Argument</em></td>
+<td><em>Description</em></td>
+</tr>
+<tr class="row-even"><td>vendorId</td>
+<td>(str):</td>
+<td>The ID of the vendor that is creating the credit.</td>
+</tr>
+<tr class="row-odd"><td>invoiceNumber</td>
+<td>(str):</td>
+<td>The invoice number or identifier.</td>
+</tr>
+<tr class="row-even"><td>invoiceDate</td>
+<td>(date):</td>
+<td>The date that the invoice was billed on.</td>
+</tr>
+<tr class="row-odd"><td>dueDate</td>
+<td>(date):</td>
+<td>The date that the invoice must be paid by.</td>
+</tr>
+<tr class="row-even"><td>externalId</td>
+<td>(str):</td>
+<td>The developer-created ID from your system.</td>
+</tr>
+<tr class="row-odd"><td>amount</td>
+<td>(Decimal):</td>
+<td>The amount of money that is billed.</td>
+</tr>
+</tbody>
+</table>
+</dd>
+<dt>Creation:</dt>
+<dd><p class="first">Create a Vendor Credit object and create it on the server side with
+with <a class="reference internal" href="#billdotcom.session.Session.create_vendorcredit" title="billdotcom.session.Session.create_vendorcredit"><tt class="xref py py-func docutils literal"><span class="pre">billdotcom.session.Session.create_vendorcredit()</span></tt></a>. For example:</p>
+<div class="last highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">Session</span><span class="p">()</span> <span class="k">as</span> <span class="n">s</span><span class="p">:</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">a</span> <span class="o">=</span> <span class="n">VendorCredit</span><span class="p">(</span>
+<span class="gp">&gt;&gt;&gt; </span>                <span class="n">vendorId</span> <span class="o">=</span> <span class="s">&quot;VENDORID&quot;</span>
+<span class="gp">&gt;&gt;&gt; </span>                <span class="n">externalId</span> <span class="o">=</span> <span class="s">&#39;123456&#39;</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>                <span class="n">invoiceNumber</span> <span class="o">=</span> <span class="s">&#39;BC1234&#39;</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>                <span class="n">invoiceDate</span> <span class="o">=</span> <span class="n">date</span><span class="p">(</span><span class="mi">2012</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span>
+<span class="gp">&gt;&gt;&gt; </span>                <span class="n">dueDate</span> <span class="o">=</span> <span class="n">date</span><span class="p">(</span><span class="mi">2012</span><span class="p">,</span><span class="mi">11</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span>
+<span class="gp">&gt;&gt;&gt; </span>                <span class="n">amount</span> <span class="o">=</span> <span class="mf">25.0</span>
+<span class="gp">&gt;&gt;&gt; </span>        <span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">a</span><span class="p">[</span><span class="s">&#39;id&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">s</span><span class="o">.</span><span class="n">create_vendorcredit</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd>
+<dt>Retrieval:</dt>
+<dd><p class="first">Download a list of Bill objects from the server with the Session.
+For example:</p>
+<div class="last highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">Session</span><span class="p">()</span> <span class="k">as</span> <span class="n">s</span><span class="p">:</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="k">print</span> <span class="p">[</span><span class="n">x</span><span class="p">[</span><span class="s">&#39;id&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">s</span><span class="o">.</span><span class="n">get_list</span><span class="p">(</span><span class="s">&#39;vendorcredit&#39;</span><span class="p">)]</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="class">
+<dt id="billdotcom.vendorcredit.VendorCreditLineItem">
+<em class="property">class </em><tt class="descclassname">billdotcom.vendorcredit.</tt><tt class="descname">VendorCreditLineItem</tt><big>(</big><em>ignore_required=False</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/billdotcom/vendorcredit.html#VendorCreditLineItem"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#billdotcom.vendorcredit.VendorCreditLineItem" title="Permalink to this definition">¶</a></dt>
+<dd><p>This models the VendorCreditLineItem object. It allows you to further describe a VendorCredit,
+assigning amounts among individual line items.</p>
+<dl class="docutils">
+<dt>Required:</dt>
+<dd><table border="1" class="first last docutils">
+<colgroup>
+<col width="15%" />
+<col width="12%" />
+<col width="73%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td colspan="2"><em>Argument</em></td>
+<td><em>Description</em></td>
+</tr>
+<tr class="row-even"><td>amount</td>
+<td>(Decimal)</td>
+<td>The amount of money that is vendor credited on this line item.</td>
+</tr>
+</tbody>
+</table>
+</dd>
+<dt>Creation:</dt>
+<dd><p class="first">VendorCreditLineItems are created along with a VendorCredit. For example</p>
+<div class="last highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">Session</span><span class="p">()</span> <span class="k">as</span> <span class="n">s</span><span class="p">:</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">a</span> <span class="o">=</span> <span class="n">VendorCredit</span><span class="p">(</span>
+<span class="gp">&gt;&gt;&gt; </span>        <span class="n">externalId</span> <span class="o">=</span> <span class="s">&#39;123456&#39;</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>        <span class="n">vendorId</span> <span class="o">=</span> <span class="s">&#39;abc123&#39;</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>        <span class="n">invoiceNumber</span> <span class="o">=</span> <span class="s">&#39;BC1234&#39;</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>        <span class="n">invoiceDate</span> <span class="o">=</span> <span class="n">date</span><span class="p">(</span><span class="mi">2012</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span>
+<span class="gp">&gt;&gt;&gt; </span>        <span class="n">creditDate</span> <span class="o">=</span> <span class="n">date</span><span class="p">(</span><span class="mi">2012</span><span class="p">,</span><span class="mi">11</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span>
+<span class="gp">&gt;&gt;&gt; </span>        <span class="n">amount</span> <span class="o">=</span> <span class="mf">5.0</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">a</span><span class="o">.</span><span class="n">add_line_item</span><span class="p">(</span><span class="n">VendorCreditLineItem</span><span class="p">(</span><span class="n">amount</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s">&quot;eggs&quot;</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">a</span><span class="o">.</span><span class="n">add_line_item</span><span class="p">(</span><span class="n">VendorCreditLineItem</span><span class="p">(</span><span class="n">amount</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s">&quot;bacon&quot;</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">a</span><span class="p">[</span><span class="s">&#39;id&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">s</span><span class="o">.</span><span class="n">create_vendor</span> <span class="n">credit</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd>
+<dt>Retrieval:</dt>
+<dd>See the <a class="reference internal" href="#billdotcom.vendorcredit.VendorCredit" title="billdotcom.vendorcredit.VendorCredit"><tt class="xref py py-class docutils literal"><span class="pre">billdotcom.vendorcredit.VendorCredit</span></tt></a> class for how you can retrieve vendor credits.</dd>
+</dl>
+</dd></dl>
+
 </div>
 <div class="section" id="module-billdotcom.vendor">
 <span id="contacts-and-vendors"></span><h1>Contacts and Vendors<a class="headerlink" href="#module-billdotcom.vendor" title="Permalink to this headline">¶</a></h1>
