@@ -56,9 +56,17 @@
 
 <span class="kn">import</span> <span class="nn">iso8601</span>
 <span class="kn">import</span> <span class="nn">uuid</span>
+<span class="kn">from</span> <span class="nn">bill</span> <span class="kn">import</span> <span class="n">Bill</span>
+<span class="kn">from</span> <span class="nn">chartofaccount</span> <span class="kn">import</span> <span class="n">ChartOfAccount</span>
+<span class="kn">from</span> <span class="nn">customer</span> <span class="kn">import</span> <span class="n">Customer</span>
+<span class="kn">from</span> <span class="nn">invoice</span> <span class="kn">import</span> <span class="n">Invoice</span>
+<span class="kn">from</span> <span class="nn">item</span> <span class="kn">import</span> <span class="n">Item</span>
+<span class="kn">from</span> <span class="nn">vendor</span> <span class="kn">import</span> <span class="n">Vendor</span>
+<span class="kn">from</span> <span class="nn">vendorcredit</span> <span class="kn">import</span> <span class="n">VendorCredit</span>
 <span class="kn">from</span> <span class="nn">config</span> <span class="kn">import</span> <span class="n">CONFIG</span><span class="p">,</span> <span class="n">get_logger</span>
 <span class="kn">from</span> <span class="nn">https</span> <span class="kn">import</span> <span class="n">https_post</span><span class="p">,</span> <span class="n">https_post_operation</span>
 <span class="kn">from</span> <span class="nn">exceptions</span> <span class="kn">import</span> <span class="n">BilldotcomError</span><span class="p">,</span> <span class="n">ServerResponseError</span>
+<span class="kn">from</span> <span class="nn">xmldict</span> <span class="kn">import</span> <span class="n">XMLDict</span>
 
 <div class="viewcode-block" id="Session"><a class="viewcode-back" href="../../index.html#billdotcom.session.Session">[docs]</a><span class="k">class</span> <span class="nc">Session</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;This models and handles serialization of the Bill object.</span>
@@ -113,10 +121,24 @@
         <span class="n">transaction</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">transaction</span><span class="p">)</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">operationresults</span><span class="p">[</span><span class="s">&#39;OK&#39;</span><span class="p">][</span><span class="n">transaction</span><span class="p">]</span>
-        <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+        <span class="k">except</span> <span class="p">(</span><span class="ne">AttributeError</span><span class="p">,</span> <span class="ne">KeyError</span><span class="p">):</span>
             <span class="n">message</span> <span class="o">=</span> <span class="n">operationresults</span><span class="p">[</span><span class="s">&#39;failed&#39;</span><span class="p">][</span><span class="n">transaction</span><span class="p">][</span><span class="s">&#39;message&#39;</span><span class="p">]</span>
             <span class="n">LOG</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
             <span class="k">raise</span> <span class="n">ServerResponseError</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">payload</span><span class="p">):</span>
+        <span class="n">transaction</span> <span class="o">=</span> <span class="n">uuid</span><span class="o">.</span><span class="n">uuid4</span><span class="p">()</span>
+
+        <span class="n">xmlstring</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__build_request__</span><span class="p">(</span><span class="s">&quot;&quot;&quot;</span>
+<span class="s">            &lt;operation transactionId=&quot;{transaction}&quot; sessionId=&quot;{sessionId}&quot;&gt;</span>
+<span class="s">                &lt;{name}&gt;</span>
+<span class="s">                    {payload}</span>
+<span class="s">                &lt;/{name}&gt;</span>
+<span class="s">            &lt;/operation&gt;</span>
+<span class="s">        &quot;&quot;&quot;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">payload</span><span class="o">=</span><span class="n">payload</span><span class="p">,</span> <span class="n">transaction</span><span class="o">=</span><span class="n">transaction</span><span class="p">)</span>
+
+        <span class="n">response</span> <span class="o">=</span> <span class="n">https_post_operation</span><span class="p">(</span><span class="n">xmlstring</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__get_result_or_fail</span><span class="p">(</span><span class="n">response</span><span class="p">,</span> <span class="n">transaction</span><span class="p">)</span>
 
 <div class="viewcode-block" id="Session.create_bill"><a class="viewcode-back" href="../../index.html#billdotcom.session.Session.create_bill">[docs]</a>    <span class="k">def</span> <span class="nf">create_bill</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bill</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Creates a Bill object on the server.</span>
@@ -130,18 +152,69 @@
 <span class="sd">        Raises:</span>
 <span class="sd">            ServerResponseError</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">transaction</span> <span class="o">=</span> <span class="n">uuid</span><span class="o">.</span><span class="n">uuid4</span><span class="p">()</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__request</span><span class="p">(</span><span class="s">&#39;create_bill&#39;</span><span class="p">,</span> <span class="n">bill</span><span class="o">.</span><span class="n">xml</span><span class="p">())</span>
+        <span class="k">return</span> <span class="n">result</span><span class="o">.</span><span class="n">getElementsByTagName</span><span class="p">(</span><span class="s">&#39;id&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">firstChild</span><span class="o">.</span><span class="n">data</span>
+</div>
+<div class="viewcode-block" id="Session.create_chartofaccount"><a class="viewcode-back" href="../../index.html#billdotcom.session.Session.create_chartofaccount">[docs]</a>    <span class="k">def</span> <span class="nf">create_chartofaccount</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">chartOfAccount</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Creates a Chart of Account object on the server.</span>
 
-        <span class="n">xmlstring</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__build_request__</span><span class="p">(</span><span class="s">&quot;&quot;&quot;</span>
-<span class="s">            &lt;operation transactionId=&quot;{transaction}&quot; sessionId=&quot;{sessionId}&quot;&gt;</span>
-<span class="s">                &lt;create_bill&gt;</span>
-<span class="s">                    {bill}</span>
-<span class="s">                &lt;/create_bill&gt;</span>
-<span class="s">            &lt;/operation&gt;</span>
-<span class="s">        &quot;&quot;&quot;</span><span class="p">,</span> <span class="n">bill</span><span class="o">=</span><span class="n">bill</span><span class="o">.</span><span class="n">xml</span><span class="p">(),</span> <span class="n">transaction</span><span class="o">=</span><span class="n">transaction</span><span class="p">)</span>
+<span class="sd">        Args:</span>
+<span class="sd">            chartOfAccount: A Chart of Account object with the required fields filled in.</span>
 
-        <span class="n">response</span> <span class="o">=</span> <span class="n">https_post_operation</span><span class="p">(</span><span class="n">xmlstring</span><span class="p">)</span>
-        <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__get_result_or_fail</span><span class="p">(</span><span class="n">response</span><span class="p">,</span> <span class="n">transaction</span><span class="p">)</span>
+<span class="sd">        Returns:</span>
+<span class="sd">            The newly created created Chart of Account&#39;s ID.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ServerResponseError</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__request</span><span class="p">(</span><span class="s">&#39;create_chartofaccount&#39;</span><span class="p">,</span> <span class="n">chartOfAccount</span><span class="o">.</span><span class="n">xml</span><span class="p">())</span>
+        <span class="k">return</span> <span class="n">result</span><span class="o">.</span><span class="n">getElementsByTagName</span><span class="p">(</span><span class="s">&#39;id&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">firstChild</span><span class="o">.</span><span class="n">data</span>
+
+</div>
+<div class="viewcode-block" id="Session.create_customer"><a class="viewcode-back" href="../../index.html#billdotcom.session.Session.create_customer">[docs]</a>    <span class="k">def</span> <span class="nf">create_customer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">customer</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Creates a Customer object on the server.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            customer: A Customer object with the required fields filled in.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            The newly created created Customer&#39;s ID.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ServerResponseError</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__request</span><span class="p">(</span><span class="s">&#39;create_customer&#39;</span><span class="p">,</span> <span class="n">customer</span><span class="o">.</span><span class="n">xml</span><span class="p">())</span>
+        <span class="k">return</span> <span class="n">result</span><span class="o">.</span><span class="n">getElementsByTagName</span><span class="p">(</span><span class="s">&#39;id&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">firstChild</span><span class="o">.</span><span class="n">data</span>
+
+</div>
+<div class="viewcode-block" id="Session.create_invoice"><a class="viewcode-back" href="../../index.html#billdotcom.session.Session.create_invoice">[docs]</a>    <span class="k">def</span> <span class="nf">create_invoice</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">invoice</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Creates a Invoice object on the server.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            invoice: An Invoice object with the required fields filled in.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            The newly created Invoice&#39;s ID.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ServerResponseError</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__request</span><span class="p">(</span><span class="s">&#39;create_invoice&#39;</span><span class="p">,</span> <span class="n">invoice</span><span class="o">.</span><span class="n">xml</span><span class="p">())</span>
+        <span class="k">return</span> <span class="n">result</span><span class="o">.</span><span class="n">getElementsByTagName</span><span class="p">(</span><span class="s">&#39;id&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">firstChild</span><span class="o">.</span><span class="n">data</span>
+</div>
+<div class="viewcode-block" id="Session.create_item"><a class="viewcode-back" href="../../index.html#billdotcom.session.Session.create_item">[docs]</a>    <span class="k">def</span> <span class="nf">create_item</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">item</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Creates an Item object on the server.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            item: An Item object with the required fields filled in.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            The newly created created Item&#39;s ID.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ServerResponseError</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__request</span><span class="p">(</span><span class="s">&#39;create_item&#39;</span><span class="p">,</span> <span class="n">item</span><span class="o">.</span><span class="n">xml</span><span class="p">())</span>
         <span class="k">return</span> <span class="n">result</span><span class="o">.</span><span class="n">getElementsByTagName</span><span class="p">(</span><span class="s">&#39;id&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">firstChild</span><span class="o">.</span><span class="n">data</span>
 </div>
 <div class="viewcode-block" id="Session.create_vendor"><a class="viewcode-back" href="../../index.html#billdotcom.session.Session.create_vendor">[docs]</a>    <span class="k">def</span> <span class="nf">create_vendor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vendor</span><span class="p">):</span>
@@ -156,20 +229,128 @@
 <span class="sd">        Raises:</span>
 <span class="sd">            ServerResponseError</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__request</span><span class="p">(</span><span class="s">&#39;create_vendor&#39;</span><span class="p">,</span> <span class="n">vendor</span><span class="o">.</span><span class="n">xml</span><span class="p">())</span>
+        <span class="k">return</span> <span class="n">result</span><span class="o">.</span><span class="n">getElementsByTagName</span><span class="p">(</span><span class="s">&#39;id&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">firstChild</span><span class="o">.</span><span class="n">data</span>
+</div>
+<div class="viewcode-block" id="Session.create_vendorcredit"><a class="viewcode-back" href="../../index.html#billdotcom.session.Session.create_vendorcredit">[docs]</a>    <span class="k">def</span> <span class="nf">create_vendorcredit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vendorcredit</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Creates a Vendor Credit object on the server.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            vendorcredit: A Vendor Credit object with the required fields filled in.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            The newly created Vendor Credit&#39;s ID.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ServerResponseError</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__request</span><span class="p">(</span><span class="s">&#39;create_vendorcredit&#39;</span><span class="p">,</span> <span class="n">vendorcredit</span><span class="o">.</span><span class="n">xml</span><span class="p">())</span>
+        <span class="k">return</span> <span class="n">result</span><span class="o">.</span><span class="n">getElementsByTagName</span><span class="p">(</span><span class="s">&#39;id&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">firstChild</span><span class="o">.</span><span class="n">data</span>
+</div>
+<div class="viewcode-block" id="Session.get_list"><a class="viewcode-back" href="../../index.html#billdotcom.session.Session.get_list">[docs]</a>    <span class="k">def</span> <span class="nf">get_list</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">object_name</span><span class="p">,</span> <span class="n">filters</span><span class="o">=</span><span class="p">[],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Gets data back from the server. Filters can be used to select specific objects by fields.</span>
+<span class="sd">        The objects will be transformed into the corresponding classes and returned.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            object_name: The type of object to list. Supported object types and their mappings:</span>
+<span class="sd">                * &quot;bill&quot; for Bill objects</span>
+<span class="sd">                * &quot;chartOfAccount&quot; for ChartOfAccount objects</span>
+<span class="sd">                * &quot;customer&quot; for Customer objects</span>
+<span class="sd">                * &quot;invoice&quot; for Invoice objects</span>
+<span class="sd">                * &quot;item&quot; for Item objects</span>
+<span class="sd">                * &quot;vendor&quot; for Vendor objects</span>
+<span class="sd">                * &quot;vendorcredit&quot; for VendorCredit objects</span>
+<span class="sd">            filters: A list of tuples representing filters to query with. Supported operators are:</span>
+<span class="sd">                    =, &lt;, &gt;, !=, &lt;=, &gt;=, IN</span>
+<span class="sd">                These operators can be used with any field in the model you are querying, as long</span>
+<span class="sd">                as it has a data type of ID, date, Enum, IntegrationId, or ExternalId. Notice</span>
+<span class="sd">                that String is **not** included!  See the official Bill.com documentation for more.</span>
+<span class="sd">                An example of using a filter:</span>
+<span class="sd">                    &gt;&gt;&gt; with Session() as s:</span>
+<span class="sd">                    &gt;&gt;&gt;     s.get_list(&#39;bill&#39;, filters=[(&#39;invoiceDate&#39;, &#39;&lt;&#39;, date.today())])</span>
+
+<span class="sd">            kwargs: You can also specify filters are simple kwargs. For example:</span>
+<span class="sd">                &gt;&gt;&gt; with Session() as s:</span>
+<span class="sd">                &gt;&gt;&gt;     s.get_list(&#39;bill&#39;, id=&#39;testID&#39;)</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            A list of object classes, such as a list of :class:`billdotcom.bill.Bill`s.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ServerResponseError</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">object_mapper</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s">&quot;bill&quot;</span><span class="p">:</span> <span class="n">Bill</span><span class="p">,</span>
+            <span class="s">&quot;chartofaccount&quot;</span><span class="p">:</span> <span class="n">ChartOfAccount</span><span class="p">,</span>
+            <span class="s">&quot;customer&quot;</span><span class="p">:</span> <span class="n">Customer</span><span class="p">,</span>
+            <span class="s">&quot;invoice&quot;</span><span class="p">:</span> <span class="n">Invoice</span><span class="p">,</span>
+            <span class="s">&quot;item&quot;</span><span class="p">:</span> <span class="n">Item</span><span class="p">,</span>
+            <span class="s">&quot;vendor&quot;</span><span class="p">:</span> <span class="n">Vendor</span><span class="p">,</span>
+            <span class="s">&quot;vendorcredit&quot;</span><span class="p">:</span> <span class="n">VendorCredit</span><span class="p">,</span>
+        <span class="p">}</span>
+
+        <span class="n">rename_dict</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s">&quot;chartofaccount&quot;</span><span class="p">:</span> <span class="s">&#39;chartOfAccount&#39;</span>
+        <span class="p">}</span>
+
+        <span class="k">if</span> <span class="n">object_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">object_mapper</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;{0} is not a supported object type&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">object_name</span><span class="p">))</span>
+
         <span class="n">transaction</span> <span class="o">=</span> <span class="n">uuid</span><span class="o">.</span><span class="n">uuid4</span><span class="p">()</span>
+
+
+        <span class="k">def</span> <span class="nf">filter_to_xml</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">op</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+            <span class="n">valid_ops</span> <span class="o">=</span> <span class="p">(</span><span class="s">&#39;=&#39;</span><span class="p">,</span> <span class="s">&#39;&lt;&#39;</span><span class="p">,</span> <span class="s">&#39;&gt;&#39;</span><span class="p">,</span> <span class="s">&#39;!=&#39;</span><span class="p">,</span> <span class="s">&#39;&lt;=&#39;</span><span class="p">,</span> <span class="s">&#39;&gt;=&#39;</span><span class="p">,</span> <span class="s">&#39;IN&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">op</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">valid_ops</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&#39;filter operator {0} is not supported&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">op</span><span class="p">))</span>
+
+            <span class="n">op</span> <span class="o">=</span> <span class="n">op</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s">&#39;&gt;&#39;</span><span class="p">,</span> <span class="s">&#39;&amp;gt;&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s">&#39;&lt;&#39;</span><span class="p">,</span> <span class="s">&#39;&amp;lt;&#39;</span><span class="p">)</span>
+
+            <span class="n">value</span> <span class="o">=</span> <span class="n">XMLDict</span><span class="o">.</span><span class="n">valuetransform</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+
+            <span class="k">return</span> <span class="s">&#39;&#39;&#39;</span>
+<span class="s">                &lt;expression&gt;</span>
+<span class="s">                    &lt;field&gt;{0}&lt;/field&gt;</span>
+<span class="s">                    &lt;operator&gt;{1}&lt;/operator&gt;</span>
+<span class="s">                    &lt;value&gt;{2}&lt;/value&gt;</span>
+<span class="s">                &lt;/expression&gt;&#39;&#39;&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">op</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+
+
+        <span class="n">filter_xml</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">op</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">filters</span><span class="p">:</span>
+            <span class="n">filter_xml</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">filter_to_xml</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">op</span><span class="p">,</span> <span class="n">value</span><span class="p">))</span>
+
+        <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">filter_xml</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">filter_to_xml</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="s">&#39;=&#39;</span><span class="p">,</span> <span class="n">value</span><span class="p">))</span>
+
+        <span class="k">if</span> <span class="n">filter_xml</span><span class="p">:</span>
+            <span class="n">filter_xml</span> <span class="o">=</span> <span class="s">&#39;&#39;&#39;</span>
+<span class="s">                &lt;filter&gt;</span>
+<span class="s">                    {0}</span>
+<span class="s">                &lt;/filter&gt;&#39;&#39;&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s">&#39;</span><span class="se">\n</span><span class="s">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">filter_xml</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">filter_xml</span> <span class="o">=</span> <span class="s">&#39;&#39;</span>
 
         <span class="n">xmlstring</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__build_request__</span><span class="p">(</span><span class="s">&quot;&quot;&quot;</span>
 <span class="s">            &lt;operation transactionId=&quot;{transaction}&quot; sessionId=&quot;{sessionId}&quot;&gt;</span>
-<span class="s">                &lt;create_vendor&gt;</span>
-<span class="s">                    {vendor}</span>
-<span class="s">                &lt;/create_vendor&gt;</span>
+<span class="s">                &lt;get_list object=&quot;{object_name}&quot;&gt;</span>
+<span class="s">                    {filter_xml}</span>
+<span class="s">                &lt;/get_list&gt;</span>
 <span class="s">            &lt;/operation&gt;</span>
-<span class="s">        &quot;&quot;&quot;</span><span class="p">,</span> <span class="n">vendor</span><span class="o">=</span><span class="n">vendor</span><span class="o">.</span><span class="n">xml</span><span class="p">(),</span> <span class="n">transaction</span><span class="o">=</span><span class="n">transaction</span><span class="p">)</span>
+<span class="s">        &quot;&quot;&quot;</span><span class="p">,</span> <span class="n">object_name</span><span class="o">=</span><span class="n">object_name</span><span class="p">,</span> <span class="n">transaction</span><span class="o">=</span><span class="n">transaction</span><span class="p">,</span> <span class="n">filter_xml</span><span class="o">=</span><span class="n">filter_xml</span><span class="p">)</span>
 
         <span class="n">response</span> <span class="o">=</span> <span class="n">https_post_operation</span><span class="p">(</span><span class="n">xmlstring</span><span class="p">)</span>
         <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__get_result_or_fail</span><span class="p">(</span><span class="n">response</span><span class="p">,</span> <span class="n">transaction</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">result</span><span class="o">.</span><span class="n">getElementsByTagName</span><span class="p">(</span><span class="s">&#39;id&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">firstChild</span><span class="o">.</span><span class="n">data</span>
 
+        <span class="n">constructor</span> <span class="o">=</span> <span class="n">object_mapper</span><span class="p">[</span><span class="n">object_name</span><span class="p">]</span>
+
+        <span class="c"># gross</span>
+        <span class="k">if</span> <span class="n">object_name</span> <span class="ow">in</span> <span class="n">rename_dict</span><span class="p">:</span>
+            <span class="n">object_name</span> <span class="o">=</span> <span class="n">rename_dict</span><span class="p">[</span><span class="n">object_name</span><span class="p">]</span>
+
+        <span class="n">object_data</span> <span class="o">=</span> <span class="p">[</span><span class="n">constructor</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">getElementsByTagName</span><span class="p">(</span><span class="n">object_name</span><span class="p">)]</span>
+        <span class="k">return</span> <span class="n">object_data</span>
 </div>
     <span class="k">def</span> <span class="nf">__enter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">login</span><span class="p">()</span>

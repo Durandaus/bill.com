@@ -60,33 +60,105 @@
     <span class="sd">&quot;&quot;&quot;This models the Bill object.</span>
 
 <span class="sd">    Required:</span>
-<span class="sd">        externalId (str): The developer-created ID from your system.</span>
-<span class="sd">        invoiceNumber (str): The invoice number or identifier.</span>
-<span class="sd">        vendorId (str): The ID of the vendor that is creating the bill.</span>
-<span class="sd">        invoiceDate (date): The date that the invoice was billed on.</span>
-<span class="sd">        dueDate (date): The date that the invoice must be paid by.</span>
-<span class="sd">        amount (Decimal): The amount of money that is billed.</span>
+<span class="sd">        ============= ========== ===============================================</span>
+<span class="sd">        *Argument*               *Description*</span>
+<span class="sd">        ------------------------ -----------------------------------------------</span>
+<span class="sd">        externalId    (str):     The developer-created ID from your system.</span>
+<span class="sd">        invoiceNumber (str):     The invoice number or identifier.</span>
+<span class="sd">        vendorId      (str):     The ID of the vendor that is creating the bill.</span>
+<span class="sd">        invoiceDate   (date):    The date that the invoice was billed on.</span>
+<span class="sd">        dueDate       (date):    The date that the invoice must be paid by.</span>
+<span class="sd">        amount        (Decimal): The amount of money that is billed.</span>
+<span class="sd">        ============= ========== ===============================================</span>
 
 <span class="sd">    Creation:</span>
 <span class="sd">        Create a Bill object and create it on the server side with</span>
 <span class="sd">        with :func:`billdotcom.session.Session.create_bill`. For example:</span>
 
 <span class="sd">            &gt;&gt;&gt; with Session() as s:</span>
-<span class="sd">            &gt;&gt;&gt;     a = Bill(uuid, invoice, billDate, dueDate, amount)</span>
+<span class="sd">            &gt;&gt;&gt;     a = Bill(</span>
+<span class="sd">            &gt;&gt;&gt;         externalId = &#39;123456&#39;,</span>
+<span class="sd">            &gt;&gt;&gt;         vendorId = &#39;abc123&#39;,</span>
+<span class="sd">            &gt;&gt;&gt;         invoiceNumber = &#39;BC1234&#39;,</span>
+<span class="sd">            &gt;&gt;&gt;         invoiceDate = date(2012,10,1),</span>
+<span class="sd">            &gt;&gt;&gt;         dueDate = date(2012,11,1),</span>
+<span class="sd">            &gt;&gt;&gt;         amount = 25.0</span>
+<span class="sd">            &gt;&gt;&gt;     )</span>
 <span class="sd">            &gt;&gt;&gt;     a[&#39;id&#39;] = s.create_bill(a)</span>
+
+<span class="sd">    Retrieval:</span>
+<span class="sd">        Download a list of Bill objects from the server with the Session.</span>
+<span class="sd">        For example:</span>
+
+<span class="sd">            &gt;&gt;&gt; with Session() as s:</span>
+<span class="sd">            &gt;&gt;&gt;     print [x[&#39;id&#39;] for x in s.get_list(&#39;bill&#39;)]</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">externalId</span><span class="p">,</span> <span class="n">invoiceNumber</span><span class="p">,</span> <span class="n">vendorId</span><span class="p">,</span> <span class="n">invoiceDate</span><span class="p">,</span> <span class="n">dueDate</span><span class="p">,</span> <span class="n">amount</span><span class="p">):</span>
-        <span class="n">payload</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="s">&#39;vendorId&#39;</span><span class="p">:</span> <span class="n">vendorId</span><span class="p">,</span>
-            <span class="s">&#39;invoiceNumber&#39;</span><span class="p">:</span> <span class="n">invoiceNumber</span><span class="p">,</span>
-            <span class="s">&#39;invoiceDate&#39;</span><span class="p">:</span> <span class="n">invoiceDate</span><span class="p">,</span>
-            <span class="s">&#39;dueDate&#39;</span><span class="p">:</span> <span class="n">dueDate</span><span class="p">,</span>
-            <span class="s">&#39;externalId&#39;</span><span class="p">:</span> <span class="n">externalId</span><span class="p">,</span>
-            <span class="s">&#39;amount&#39;</span><span class="p">:</span> <span class="n">amount</span><span class="p">,</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ignore_required</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">required</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="s">&#39;vendorId&#39;</span><span class="p">,</span>
+            <span class="s">&#39;invoiceNumber&#39;</span><span class="p">,</span>
+            <span class="s">&#39;invoiceDate&#39;</span><span class="p">,</span>
+            <span class="s">&#39;dueDate&#39;</span><span class="p">,</span>
+            <span class="s">&#39;externalId&#39;</span><span class="p">,</span>
+            <span class="s">&#39;amount&#39;</span><span class="p">,</span>
+            <span class="s">&#39;vendorId&#39;</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">ignore_required</span> <span class="o">==</span> <span class="bp">True</span><span class="p">:</span>
+            <span class="n">required</span> <span class="o">=</span> <span class="p">()</span>
+
+        <span class="nb">super</span><span class="p">(</span><span class="n">Bill</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="s">&#39;bill&#39;</span><span class="p">,</span> <span class="n">required</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">nested_map</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s">&#39;billLineItems&#39;</span><span class="p">:</span> <span class="n">BillLineItem</span>
         <span class="p">}</span>
 
-        <span class="nb">super</span><span class="p">(</span><span class="n">Bill</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="s">&#39;bill&#39;</span><span class="p">,</span> <span class="o">**</span><span class="n">payload</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">add_line_item</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">line_item</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nested_object</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s">&#39;billLineItems&#39;</span><span class="p">,</span> <span class="p">[])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">nested_object</span><span class="p">[</span><span class="s">&#39;billLineItems&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">line_item</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="BillLineItem"><a class="viewcode-back" href="../../index.html#billdotcom.bill.BillLineItem">[docs]</a><span class="k">class</span> <span class="nc">BillLineItem</span><span class="p">(</span><span class="n">XMLDict</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;This models the BillLineItem object. It allows you to further describe a Bill,</span>
+<span class="sd">    assigning amounts among individual line items.</span>
+
+<span class="sd">    Required:</span>
+<span class="sd">        ============= ========== =====================================================</span>
+<span class="sd">        *Argument*               *Description*</span>
+<span class="sd">        ------------------------ -----------------------------------------------------</span>
+<span class="sd">        amount        (Decimal)  The amount of money that is billed on this line item.</span>
+<span class="sd">        ============= ========== =====================================================</span>
+
+<span class="sd">    Creation:</span>
+<span class="sd">        BillLineItems are created along with a Bill. For example</span>
+
+<span class="sd">            &gt;&gt;&gt; with Session() as s:</span>
+<span class="sd">            &gt;&gt;&gt;     a = Bill(</span>
+<span class="sd">            &gt;&gt;&gt;         externalId = &#39;123456&#39;,</span>
+<span class="sd">            &gt;&gt;&gt;         vendorId = &#39;abc123&#39;,</span>
+<span class="sd">            &gt;&gt;&gt;         invoiceNumber = &#39;BC1234&#39;,</span>
+<span class="sd">            &gt;&gt;&gt;         invoiceDate = date(2012,10,1),</span>
+<span class="sd">            &gt;&gt;&gt;         dueDate = date(2012,11,1),</span>
+<span class="sd">            &gt;&gt;&gt;         amount = 5.0</span>
+<span class="sd">            &gt;&gt;&gt;     )</span>
+<span class="sd">            &gt;&gt;&gt;     a.add_line_item(BillLineItem(amount=2, description=&quot;eggs&quot;))</span>
+<span class="sd">            &gt;&gt;&gt;     a.add_line_item(BillLineItem(amount=3, description=&quot;bacon&quot;))</span>
+<span class="sd">            &gt;&gt;&gt;     a[&#39;id&#39;] = s.create_bill(a)</span>
+
+<span class="sd">    Retrieval:</span>
+<span class="sd">        See the :class:`billdotcom.bill.Bill` class for how you can retrieve bills.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ignore_required</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">required</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="s">&#39;amount&#39;</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">ignore_required</span> <span class="o">==</span> <span class="bp">True</span><span class="p">:</span>
+            <span class="n">required</span> <span class="o">=</span> <span class="p">()</span>
+
+        <span class="nb">super</span><span class="p">(</span><span class="n">BillLineItem</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="s">&#39;billLineItem&#39;</span><span class="p">,</span> <span class="n">required</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
 </pre></div></div>
 
           </div>

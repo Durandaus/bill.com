@@ -60,22 +60,161 @@ visit the <a class="reference external" href="http://www.bill.com/resources/deve
 <span id="bills-and-payments"></span><h1>Bills and Payments<a class="headerlink" href="#module-billdotcom.bill" title="Permalink to this headline">¶</a></h1>
 <span class="target" id="module-bill"></span><dl class="class">
 <dt id="billdotcom.bill.Bill">
-<em class="property">class </em><tt class="descclassname">billdotcom.bill.</tt><tt class="descname">Bill</tt><big>(</big><em>externalId</em>, <em>invoiceNumber</em>, <em>vendorId</em>, <em>invoiceDate</em>, <em>dueDate</em>, <em>amount</em><big>)</big><a class="reference internal" href="_modules/billdotcom/bill.html#Bill"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#billdotcom.bill.Bill" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">billdotcom.bill.</tt><tt class="descname">Bill</tt><big>(</big><em>ignore_required=False</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/billdotcom/bill.html#Bill"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#billdotcom.bill.Bill" title="Permalink to this definition">¶</a></dt>
 <dd><p>This models the Bill object.</p>
 <dl class="docutils">
 <dt>Required:</dt>
-<dd>externalId (str): The developer-created ID from your system.
-invoiceNumber (str): The invoice number or identifier.
-vendorId (str): The ID of the vendor that is creating the bill.
-invoiceDate (date): The date that the invoice was billed on.
-dueDate (date): The date that the invoice must be paid by.
-amount (Decimal): The amount of money that is billed.</dd>
+<dd><table border="1" class="first last docutils">
+<colgroup>
+<col width="19%" />
+<col width="14%" />
+<col width="67%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td colspan="2"><em>Argument</em></td>
+<td><em>Description</em></td>
+</tr>
+<tr class="row-even"><td>externalId</td>
+<td>(str):</td>
+<td>The developer-created ID from your system.</td>
+</tr>
+<tr class="row-odd"><td>invoiceNumber</td>
+<td>(str):</td>
+<td>The invoice number or identifier.</td>
+</tr>
+<tr class="row-even"><td>vendorId</td>
+<td>(str):</td>
+<td>The ID of the vendor that is creating the bill.</td>
+</tr>
+<tr class="row-odd"><td>invoiceDate</td>
+<td>(date):</td>
+<td>The date that the invoice was billed on.</td>
+</tr>
+<tr class="row-even"><td>dueDate</td>
+<td>(date):</td>
+<td>The date that the invoice must be paid by.</td>
+</tr>
+<tr class="row-odd"><td>amount</td>
+<td>(Decimal):</td>
+<td>The amount of money that is billed.</td>
+</tr>
+</tbody>
+</table>
+</dd>
 <dt>Creation:</dt>
 <dd><p class="first">Create a Bill object and create it on the server side with
 with <a class="reference internal" href="#billdotcom.session.Session.create_bill" title="billdotcom.session.Session.create_bill"><tt class="xref py py-func docutils literal"><span class="pre">billdotcom.session.Session.create_bill()</span></tt></a>. For example:</p>
 <div class="last highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">Session</span><span class="p">()</span> <span class="k">as</span> <span class="n">s</span><span class="p">:</span>
-<span class="gp">&gt;&gt;&gt; </span>    <span class="n">a</span> <span class="o">=</span> <span class="n">Bill</span><span class="p">(</span><span class="n">uuid</span><span class="p">,</span> <span class="n">invoice</span><span class="p">,</span> <span class="n">billDate</span><span class="p">,</span> <span class="n">dueDate</span><span class="p">,</span> <span class="n">amount</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">a</span> <span class="o">=</span> <span class="n">Bill</span><span class="p">(</span>
+<span class="gp">&gt;&gt;&gt; </span>        <span class="n">externalId</span> <span class="o">=</span> <span class="s">&#39;123456&#39;</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>        <span class="n">vendorId</span> <span class="o">=</span> <span class="s">&#39;abc123&#39;</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>        <span class="n">invoiceNumber</span> <span class="o">=</span> <span class="s">&#39;BC1234&#39;</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>        <span class="n">invoiceDate</span> <span class="o">=</span> <span class="n">date</span><span class="p">(</span><span class="mi">2012</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span>
+<span class="gp">&gt;&gt;&gt; </span>        <span class="n">dueDate</span> <span class="o">=</span> <span class="n">date</span><span class="p">(</span><span class="mi">2012</span><span class="p">,</span><span class="mi">11</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span>
+<span class="gp">&gt;&gt;&gt; </span>        <span class="n">amount</span> <span class="o">=</span> <span class="mf">25.0</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="p">)</span>
 <span class="gp">&gt;&gt;&gt; </span>    <span class="n">a</span><span class="p">[</span><span class="s">&#39;id&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">s</span><span class="o">.</span><span class="n">create_bill</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd>
+<dt>Retrieval:</dt>
+<dd><p class="first">Download a list of Bill objects from the server with the Session.
+For example:</p>
+<div class="last highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">Session</span><span class="p">()</span> <span class="k">as</span> <span class="n">s</span><span class="p">:</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="k">print</span> <span class="p">[</span><span class="n">x</span><span class="p">[</span><span class="s">&#39;id&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">s</span><span class="o">.</span><span class="n">get_list</span><span class="p">(</span><span class="s">&#39;bill&#39;</span><span class="p">)]</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="class">
+<dt id="billdotcom.bill.BillLineItem">
+<em class="property">class </em><tt class="descclassname">billdotcom.bill.</tt><tt class="descname">BillLineItem</tt><big>(</big><em>ignore_required=False</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/billdotcom/bill.html#BillLineItem"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#billdotcom.bill.BillLineItem" title="Permalink to this definition">¶</a></dt>
+<dd><p>This models the BillLineItem object. It allows you to further describe a Bill,
+assigning amounts among individual line items.</p>
+<dl class="docutils">
+<dt>Required:</dt>
+<dd><table border="1" class="first last docutils">
+<colgroup>
+<col width="17%" />
+<col width="13%" />
+<col width="70%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td colspan="2"><em>Argument</em></td>
+<td><em>Description</em></td>
+</tr>
+<tr class="row-even"><td>amount</td>
+<td>(Decimal)</td>
+<td>The amount of money that is billed on this line item.</td>
+</tr>
+</tbody>
+</table>
+</dd>
+<dt>Creation:</dt>
+<dd><p class="first">BillLineItems are created along with a Bill. For example</p>
+<div class="last highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">Session</span><span class="p">()</span> <span class="k">as</span> <span class="n">s</span><span class="p">:</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">a</span> <span class="o">=</span> <span class="n">Bill</span><span class="p">(</span>
+<span class="gp">&gt;&gt;&gt; </span>        <span class="n">externalId</span> <span class="o">=</span> <span class="s">&#39;123456&#39;</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>        <span class="n">vendorId</span> <span class="o">=</span> <span class="s">&#39;abc123&#39;</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>        <span class="n">invoiceNumber</span> <span class="o">=</span> <span class="s">&#39;BC1234&#39;</span><span class="p">,</span>
+<span class="gp">&gt;&gt;&gt; </span>        <span class="n">invoiceDate</span> <span class="o">=</span> <span class="n">date</span><span class="p">(</span><span class="mi">2012</span><span class="p">,</span><span class="mi">10</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span>
+<span class="gp">&gt;&gt;&gt; </span>        <span class="n">dueDate</span> <span class="o">=</span> <span class="n">date</span><span class="p">(</span><span class="mi">2012</span><span class="p">,</span><span class="mi">11</span><span class="p">,</span><span class="mi">1</span><span class="p">),</span>
+<span class="gp">&gt;&gt;&gt; </span>        <span class="n">amount</span> <span class="o">=</span> <span class="mf">5.0</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">a</span><span class="o">.</span><span class="n">add_line_item</span><span class="p">(</span><span class="n">BillLineItem</span><span class="p">(</span><span class="n">amount</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s">&quot;eggs&quot;</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">a</span><span class="o">.</span><span class="n">add_line_item</span><span class="p">(</span><span class="n">BillLineItem</span><span class="p">(</span><span class="n">amount</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s">&quot;bacon&quot;</span><span class="p">))</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">a</span><span class="p">[</span><span class="s">&#39;id&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">s</span><span class="o">.</span><span class="n">create_bill</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd>
+<dt>Retrieval:</dt>
+<dd>See the <a class="reference internal" href="#billdotcom.bill.Bill" title="billdotcom.bill.Bill"><tt class="xref py py-class docutils literal"><span class="pre">billdotcom.bill.Bill</span></tt></a> class for how you can retrieve bills.</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="module-billdotcom.vendor">
+<span id="contacts-and-vendors"></span><h1>Contacts and Vendors<a class="headerlink" href="#module-billdotcom.vendor" title="Permalink to this headline">¶</a></h1>
+<span class="target" id="module-vendor"></span><dl class="class">
+<dt id="billdotcom.vendor.Vendor">
+<em class="property">class </em><tt class="descclassname">billdotcom.vendor.</tt><tt class="descname">Vendor</tt><big>(</big><em>ignore_required=False</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/billdotcom/vendor.html#Vendor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#billdotcom.vendor.Vendor" title="Permalink to this definition">¶</a></dt>
+<dd><p>This models the Vendor object. In Bill.com vendors are the targets 
+that payments are sent to.</p>
+<dl class="docutils">
+<dt>Required:</dt>
+<dd><table border="1" class="first last docutils">
+<colgroup>
+<col width="13%" />
+<col width="16%" />
+<col width="72%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td colspan="2"><em>Argument</em></td>
+<td><em>Description</em></td>
+</tr>
+<tr class="row-even"><td>name</td>
+<td>(str)</td>
+<td>The name of the vendor</td>
+</tr>
+</tbody>
+</table>
+</dd>
+<dt>Creation:</dt>
+<dd><p class="first">Create a Vendor object and create it on the server side with
+with <a class="reference internal" href="#billdotcom.session.Session.create_vendor" title="billdotcom.session.Session.create_vendor"><tt class="xref py py-func docutils literal"><span class="pre">billdotcom.session.Session.create_vendor()</span></tt></a>. For example:</p>
+<div class="last highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">Session</span><span class="p">()</span> <span class="k">as</span> <span class="n">s</span><span class="p">:</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">a</span> <span class="o">=</span> <span class="n">Vendor</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s">&quot;Test Vendor&quot;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">a</span><span class="p">[</span><span class="s">&#39;id&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">s</span><span class="o">.</span><span class="n">create_vendor</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd>
+<dt>Retrieval:</dt>
+<dd><p class="first">Download a list of Vendor objects from the server with the Session.
+For example:</p>
+<div class="last highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">Session</span><span class="p">()</span> <span class="k">as</span> <span class="n">s</span><span class="p">:</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="k">print</span> <span class="p">[</span><span class="n">x</span><span class="p">[</span><span class="s">&#39;id&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">s</span><span class="o">.</span><span class="n">get_list</span><span class="p">(</span><span class="s">&#39;vendor&#39;</span><span class="p">)]</span>
 </pre></div>
 </div>
 </dd>
@@ -111,6 +250,62 @@ Sessions will time out after 35 minutes.</p>
 </dd></dl>
 
 <dl class="method">
+<dt id="billdotcom.session.Session.create_chartofaccount">
+<tt class="descname">create_chartofaccount</tt><big>(</big><em>chartOfAccount</em><big>)</big><a class="reference internal" href="_modules/billdotcom/session.html#Session.create_chartofaccount"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#billdotcom.session.Session.create_chartofaccount" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a Chart of Account object on the server.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>chartOfAccount: A Chart of Account object with the required fields filled in.</dd>
+<dt>Returns:</dt>
+<dd>The newly created created Chart of Account&#8217;s ID.</dd>
+<dt>Raises:</dt>
+<dd>ServerResponseError</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="billdotcom.session.Session.create_customer">
+<tt class="descname">create_customer</tt><big>(</big><em>customer</em><big>)</big><a class="reference internal" href="_modules/billdotcom/session.html#Session.create_customer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#billdotcom.session.Session.create_customer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a Customer object on the server.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>customer: A Customer object with the required fields filled in.</dd>
+<dt>Returns:</dt>
+<dd>The newly created created Customer&#8217;s ID.</dd>
+<dt>Raises:</dt>
+<dd>ServerResponseError</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="billdotcom.session.Session.create_invoice">
+<tt class="descname">create_invoice</tt><big>(</big><em>invoice</em><big>)</big><a class="reference internal" href="_modules/billdotcom/session.html#Session.create_invoice"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#billdotcom.session.Session.create_invoice" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a Invoice object on the server.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>invoice: An Invoice object with the required fields filled in.</dd>
+<dt>Returns:</dt>
+<dd>The newly created Invoice&#8217;s ID.</dd>
+<dt>Raises:</dt>
+<dd>ServerResponseError</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="billdotcom.session.Session.create_item">
+<tt class="descname">create_item</tt><big>(</big><em>item</em><big>)</big><a class="reference internal" href="_modules/billdotcom/session.html#Session.create_item"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#billdotcom.session.Session.create_item" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates an Item object on the server.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>item: An Item object with the required fields filled in.</dd>
+<dt>Returns:</dt>
+<dd>The newly created created Item&#8217;s ID.</dd>
+<dt>Raises:</dt>
+<dd>ServerResponseError</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
 <dt id="billdotcom.session.Session.create_vendor">
 <tt class="descname">create_vendor</tt><big>(</big><em>vendor</em><big>)</big><a class="reference internal" href="_modules/billdotcom/session.html#Session.create_vendor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#billdotcom.session.Session.create_vendor" title="Permalink to this definition">¶</a></dt>
 <dd><p>Creates a Vendor object on the server.</p>
@@ -119,6 +314,66 @@ Sessions will time out after 35 minutes.</p>
 <dd>vendor: A Vendor object with the required fields filled in.</dd>
 <dt>Returns:</dt>
 <dd>The newly created Vendor&#8217;s ID.</dd>
+<dt>Raises:</dt>
+<dd>ServerResponseError</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="billdotcom.session.Session.create_vendorcredit">
+<tt class="descname">create_vendorcredit</tt><big>(</big><em>vendorcredit</em><big>)</big><a class="reference internal" href="_modules/billdotcom/session.html#Session.create_vendorcredit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#billdotcom.session.Session.create_vendorcredit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates a Vendor Credit object on the server.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>vendorcredit: A Vendor Credit object with the required fields filled in.</dd>
+<dt>Returns:</dt>
+<dd>The newly created Vendor Credit&#8217;s ID.</dd>
+<dt>Raises:</dt>
+<dd>ServerResponseError</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="billdotcom.session.Session.get_list">
+<tt class="descname">get_list</tt><big>(</big><em>object_name</em>, <em>filters=</em><span class="optional">[</span><span class="optional">]</span>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/billdotcom/session.html#Session.get_list"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#billdotcom.session.Session.get_list" title="Permalink to this definition">¶</a></dt>
+<dd><p>Gets data back from the server. Filters can be used to select specific objects by fields.
+The objects will be transformed into the corresponding classes and returned.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd><dl class="first last docutils">
+<dt>object_name: The type of object to list. Supported object types and their mappings:</dt>
+<dd><ul class="first last simple">
+<li>&#8220;bill&#8221; for Bill objects</li>
+<li>&#8220;chartOfAccount&#8221; for ChartOfAccount objects</li>
+<li>&#8220;customer&#8221; for Customer objects</li>
+<li>&#8220;invoice&#8221; for Invoice objects</li>
+<li>&#8220;item&#8221; for Item objects</li>
+<li>&#8220;vendor&#8221; for Vendor objects</li>
+<li>&#8220;vendorcredit&#8221; for VendorCredit objects</li>
+</ul>
+</dd>
+<dt>filters: A list of tuples representing filters to query with. Supported operators are:</dt>
+<dd><blockquote class="first">
+<div>=, &lt;, &gt;, !=, &lt;=, &gt;=, IN</div></blockquote>
+<p>These operators can be used with any field in the model you are querying, as long
+as it has a data type of ID, date, Enum, IntegrationId, or ExternalId. Notice
+that String is <strong>not</strong> included!  See the official Bill.com documentation for more.
+An example of using a filter:</p>
+<div class="last highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">Session</span><span class="p">()</span> <span class="k">as</span> <span class="n">s</span><span class="p">:</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">s</span><span class="o">.</span><span class="n">get_list</span><span class="p">(</span><span class="s">&#39;bill&#39;</span><span class="p">,</span> <span class="n">filters</span><span class="o">=</span><span class="p">[(</span><span class="s">&#39;invoiceDate&#39;</span><span class="p">,</span> <span class="s">&#39;&lt;&#39;</span><span class="p">,</span> <span class="n">date</span><span class="o">.</span><span class="n">today</span><span class="p">())])</span>
+</pre></div>
+</div>
+</dd>
+<dt>kwargs: You can also specify filters are simple kwargs. For example:</dt>
+<dd><div class="first last highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">Session</span><span class="p">()</span> <span class="k">as</span> <span class="n">s</span><span class="p">:</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">s</span><span class="o">.</span><span class="n">get_list</span><span class="p">(</span><span class="s">&#39;bill&#39;</span><span class="p">,</span> <span class="nb">id</span><span class="o">=</span><span class="s">&#39;testID&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+</dd>
+<dt>Returns:</dt>
+<dd>A list of object classes, such as a list of :class:<a href="#id1"><span class="problematic" id="id2">`</span></a>billdotcom.bill.Bill`s.</dd>
 <dt>Raises:</dt>
 <dd>ServerResponseError</dd>
 </dl>
@@ -262,6 +517,7 @@ to the default log file. See <a class="reference internal" href="#module-billdot
 </ul>
 </li>
 <li><a class="reference internal" href="#module-billdotcom.bill">Bills and Payments</a></li>
+<li><a class="reference internal" href="#module-billdotcom.vendor">Contacts and Vendors</a></li>
 <li><a class="reference internal" href="#module-billdotcom.session">Sessions and Authentication</a></li>
 <li><a class="reference internal" href="#module-billdotcom.config">Configuration</a></li>
 <li><a class="reference internal" href="#module-billdotcom.exceptions">Exceptions</a></li>
