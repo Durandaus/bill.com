@@ -326,11 +326,29 @@ with <a class="reference internal" href="#billdotcom.session.Session.create_vend
 </pre></div>
 </div>
 </dd>
+<dt>Updates:</dt>
+<dd><p class="first">It&#8217;s easy to create and update your contacts and vendors.
+For example, to activate a given vendor:</p>
+<div class="highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="n">vendor</span> <span class="o">=</span> <span class="n">s</span><span class="o">.</span><span class="n">get_list</span><span class="p">(</span><span class="s">&#39;vendor&#39;</span><span class="p">,</span> <span class="nb">id</span><span class="o">=</span><span class="s">&#39;00901YYOFDJNAHP2xlg9&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">vendor</span><span class="p">[</span><span class="s">&#39;isActive&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="o">.</span><span class="n">update_vendor</span><span class="p">(</span><span class="n">vendor</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="last docutils">
+<dt>If you want to deactivate all your vendors, you might try something like this:</dt>
+<dd><div class="first last highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">vendor</span> <span class="ow">in</span> <span class="n">s</span><span class="o">.</span><span class="n">get_list</span><span class="p">(</span><span class="s">&#39;vendor&#39;</span><span class="p">):</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">vendor</span><span class="p">[</span><span class="s">&#39;isActive&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">2</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">s</span><span class="o">.</span><span class="n">update_vendor</span><span class="p">(</span><span class="n">vendor</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd>
+</dl>
+</dd>
 <dt>Retrieval:</dt>
 <dd><p class="first">Download a list of Vendor objects from the server with the Session.
 For example:</p>
 <div class="last highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">Session</span><span class="p">()</span> <span class="k">as</span> <span class="n">s</span><span class="p">:</span>
-<span class="gp">&gt;&gt;&gt; </span>    <span class="k">print</span> <span class="p">[</span><span class="n">x</span><span class="p">[</span><span class="s">&#39;id&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">s</span><span class="o">.</span><span class="n">get_list</span><span class="p">(</span><span class="s">&#39;vendor&#39;</span><span class="p">)]</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="k">print</span> <span class="n">s</span><span class="o">.</span><span class="n">get_list</span><span class="p">(</span><span class="s">&#39;vendor&#39;</span><span class="p">)</span>
 </pre></div>
 </div>
 </dd>
@@ -437,15 +455,30 @@ Sessions will time out after 35 minutes.</p>
 
 <dl class="method">
 <dt id="billdotcom.session.Session.create_vendorcredit">
-<tt class="descname">create_vendorcredit</tt><big>(</big><em>vendorcredit</em><big>)</big><a class="reference internal" href="_modules/billdotcom/session.html#Session.create_vendorcredit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#billdotcom.session.Session.create_vendorcredit" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">create_vendorcredit</tt><big>(</big><em>vendorCredit</em><big>)</big><a class="reference internal" href="_modules/billdotcom/session.html#Session.create_vendorcredit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#billdotcom.session.Session.create_vendorcredit" title="Permalink to this definition">¶</a></dt>
 <dd><p>Creates a Vendor Credit object on the server.</p>
 <dl class="docutils">
 <dt>Args:</dt>
-<dd>vendorcredit: A Vendor Credit object with the required fields filled in.</dd>
+<dd>vendorCredit: A Vendor Credit object with the required fields filled in.</dd>
 <dt>Returns:</dt>
 <dd>The newly created Vendor Credit&#8217;s ID.</dd>
 <dt>Raises:</dt>
 <dd>ServerResponseError</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="billdotcom.session.Session.custom_request">
+<tt class="descname">custom_request</tt><big>(</big><em>name</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/billdotcom/session.html#Session.custom_request"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#billdotcom.session.Session.custom_request" title="Permalink to this definition">¶</a></dt>
+<dd><p>Construct and send a custom request.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>name: The name of the operation. For instance, &#8216;send_vendor_invite&#8217;.
+kwargs: Key values of data to send in the payload.</dd>
+<dt>Returns:</dt>
+<dd>XML dom response.</dd>
+<dt>Raises:</dt>
+<dd>ServerReponseError</dd>
 </dl>
 </dd></dl>
 
@@ -460,7 +493,7 @@ The objects will be transformed into the corresponding classes and returned.</p>
 <dt>object_name: The type of object to list. Supported object types and their mappings:</dt>
 <dd><ul class="first last simple">
 <li>&#8220;bill&#8221; for Bill objects</li>
-<li>&#8220;chartOfAccount&#8221; for ChartOfAccount objects</li>
+<li>&#8220;chartofaccount&#8221; for ChartOfAccount objects</li>
 <li>&#8220;customer&#8221; for Customer objects</li>
 <li>&#8220;invoice&#8221; for Invoice objects</li>
 <li>&#8220;item&#8221; for Item objects</li>
@@ -515,6 +548,63 @@ An example of using a filter:</p>
 <dt id="billdotcom.session.Session.logout">
 <tt class="descname">logout</tt><big>(</big><big>)</big><a class="reference internal" href="_modules/billdotcom/session.html#Session.logout"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#billdotcom.session.Session.logout" title="Permalink to this definition">¶</a></dt>
 <dd><p>Shut down a session on the server.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="billdotcom.session.Session.send_vendor_invite">
+<tt class="descname">send_vendor_invite</tt><big>(</big><em>vendorId</em>, <em>email</em><big>)</big><a class="reference internal" href="_modules/billdotcom/session.html#Session.send_vendor_invite"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#billdotcom.session.Session.send_vendor_invite" title="Permalink to this definition">¶</a></dt>
+<dd><p>Updates a Vendor object on the server. Update with &#8216;isActive&#8217;=2 to deactivate it.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>vendor: A Vendor object with the required fields filled in.</dd>
+<dt>Returns:</dt>
+<dd>The DOM from the request.</dd>
+<dt>Raises:</dt>
+<dd>ServerResponseError</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="billdotcom.session.Session.set_external_id">
+<tt class="descname">set_external_id</tt><big>(</big><em>id</em>, <em>externalId</em><big>)</big><a class="reference internal" href="_modules/billdotcom/session.html#Session.set_external_id"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#billdotcom.session.Session.set_external_id" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets the external id for an object on Bill.com&#8217;s side.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>id: The id of the object on Bill.com&#8217;s side.
+externalId: The custom id to set.</dd>
+<dt>Returns:</dt>
+<dd>The DOM from the request.</dd>
+<dt>Raises:</dt>
+<dd>ServerResponseError</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="billdotcom.session.Session.update_customer">
+<tt class="descname">update_customer</tt><big>(</big><em>customer</em><big>)</big><a class="reference internal" href="_modules/billdotcom/session.html#Session.update_customer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#billdotcom.session.Session.update_customer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Updates a Customer object on the server. Update with &#8216;isActive&#8217;=2 to deactivate it.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>customer: A Customer object with the required fields filled in.</dd>
+<dt>Returns:</dt>
+<dd>The updated Customer&#8217;s ID.</dd>
+<dt>Raises:</dt>
+<dd>ServerResponseError</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="billdotcom.session.Session.update_vendor">
+<tt class="descname">update_vendor</tt><big>(</big><em>vendor</em><big>)</big><a class="reference internal" href="_modules/billdotcom/session.html#Session.update_vendor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#billdotcom.session.Session.update_vendor" title="Permalink to this definition">¶</a></dt>
+<dd><p>Updates a Vendor object on the server. Update with &#8216;isActive&#8217;=2 to deactivate it.</p>
+<dl class="docutils">
+<dt>Args:</dt>
+<dd>vendor: A Vendor object with the required fields filled in.</dd>
+<dt>Returns:</dt>
+<dd>The updated Vendor&#8217;s ID.</dd>
+<dt>Raises:</dt>
+<dd>ServerResponseError</dd>
+</dl>
 </dd></dl>
 
 </dd></dl>

@@ -140,6 +140,27 @@
         <span class="n">response</span> <span class="o">=</span> <span class="n">https_post_operation</span><span class="p">(</span><span class="n">xmlstring</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__get_result_or_fail</span><span class="p">(</span><span class="n">response</span><span class="p">,</span> <span class="n">transaction</span><span class="p">)</span>
 
+<div class="viewcode-block" id="Session.custom_request"><a class="viewcode-back" href="../../index.html#billdotcom.session.Session.custom_request">[docs]</a>    <span class="k">def</span> <span class="nf">custom_request</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Construct and send a custom request.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            name: The name of the operation. For instance, &#39;send_vendor_invite&#39;.</span>
+<span class="sd">            kwargs: Key values of data to send in the payload.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            XML dom response.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ServerReponseError</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">payload</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="s">&#39;&lt;{0}&gt;{1}&lt;/{0}&gt;&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">XMLDict</span><span class="o">.</span><span class="n">valuetransform</span><span class="p">(</span><span class="n">value</span><span class="p">))</span>
+            <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+        <span class="p">]</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__request</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">payload</span><span class="p">)</span>
+</div>
 <div class="viewcode-block" id="Session.create_bill"><a class="viewcode-back" href="../../index.html#billdotcom.session.Session.create_bill">[docs]</a>    <span class="k">def</span> <span class="nf">create_bill</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">bill</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Creates a Bill object on the server.</span>
 
@@ -185,7 +206,21 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__request</span><span class="p">(</span><span class="s">&#39;create_customer&#39;</span><span class="p">,</span> <span class="n">customer</span><span class="o">.</span><span class="n">xml</span><span class="p">())</span>
         <span class="k">return</span> <span class="n">result</span><span class="o">.</span><span class="n">getElementsByTagName</span><span class="p">(</span><span class="s">&#39;id&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">firstChild</span><span class="o">.</span><span class="n">data</span>
+</div>
+<div class="viewcode-block" id="Session.update_customer"><a class="viewcode-back" href="../../index.html#billdotcom.session.Session.update_customer">[docs]</a>    <span class="k">def</span> <span class="nf">update_customer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">customer</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Updates a Customer object on the server. Update with &#39;isActive&#39;=2 to deactivate it.</span>
 
+<span class="sd">        Args:</span>
+<span class="sd">            customer: A Customer object with the required fields filled in.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            The updated Customer&#39;s ID.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ServerResponseError</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__request</span><span class="p">(</span><span class="s">&#39;update_customer&#39;</span><span class="p">,</span> <span class="n">customer</span><span class="o">.</span><span class="n">xml</span><span class="p">())</span>
+        <span class="k">return</span> <span class="n">result</span><span class="o">.</span><span class="n">getElementsByTagName</span><span class="p">(</span><span class="s">&#39;id&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">firstChild</span><span class="o">.</span><span class="n">data</span>
 </div>
 <div class="viewcode-block" id="Session.create_invoice"><a class="viewcode-back" href="../../index.html#billdotcom.session.Session.create_invoice">[docs]</a>    <span class="k">def</span> <span class="nf">create_invoice</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">invoice</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Creates a Invoice object on the server.</span>
@@ -232,11 +267,41 @@
         <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__request</span><span class="p">(</span><span class="s">&#39;create_vendor&#39;</span><span class="p">,</span> <span class="n">vendor</span><span class="o">.</span><span class="n">xml</span><span class="p">())</span>
         <span class="k">return</span> <span class="n">result</span><span class="o">.</span><span class="n">getElementsByTagName</span><span class="p">(</span><span class="s">&#39;id&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">firstChild</span><span class="o">.</span><span class="n">data</span>
 </div>
-<div class="viewcode-block" id="Session.create_vendorcredit"><a class="viewcode-back" href="../../index.html#billdotcom.session.Session.create_vendorcredit">[docs]</a>    <span class="k">def</span> <span class="nf">create_vendorcredit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vendorcredit</span><span class="p">):</span>
+<div class="viewcode-block" id="Session.update_vendor"><a class="viewcode-back" href="../../index.html#billdotcom.session.Session.update_vendor">[docs]</a>    <span class="k">def</span> <span class="nf">update_vendor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vendor</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Updates a Vendor object on the server. Update with &#39;isActive&#39;=2 to deactivate it.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            vendor: A Vendor object with the required fields filled in.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            The updated Vendor&#39;s ID.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ServerResponseError</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__request</span><span class="p">(</span><span class="s">&#39;update_vendor&#39;</span><span class="p">,</span> <span class="n">vendor</span><span class="o">.</span><span class="n">xml</span><span class="p">())</span>
+        <span class="k">return</span> <span class="n">result</span><span class="o">.</span><span class="n">getElementsByTagName</span><span class="p">(</span><span class="s">&#39;id&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">firstChild</span><span class="o">.</span><span class="n">data</span>
+</div>
+<div class="viewcode-block" id="Session.send_vendor_invite"><a class="viewcode-back" href="../../index.html#billdotcom.session.Session.send_vendor_invite">[docs]</a>    <span class="k">def</span> <span class="nf">send_vendor_invite</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vendorId</span><span class="p">,</span> <span class="n">email</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Updates a Vendor object on the server. Update with &#39;isActive&#39;=2 to deactivate it.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            vendor: A Vendor object with the required fields filled in.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            The DOM from the request.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ServerResponseError</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">custom_request</span><span class="p">(</span><span class="s">&#39;send_vendor_invite&#39;</span><span class="p">,</span> <span class="n">vendorId</span><span class="o">=</span><span class="n">vendorId</span><span class="p">,</span> <span class="n">email</span><span class="o">=</span><span class="n">email</span><span class="p">)</span>
+</div>
+<div class="viewcode-block" id="Session.create_vendorcredit"><a class="viewcode-back" href="../../index.html#billdotcom.session.Session.create_vendorcredit">[docs]</a>    <span class="k">def</span> <span class="nf">create_vendorcredit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vendorCredit</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Creates a Vendor Credit object on the server.</span>
 
 <span class="sd">        Args:</span>
-<span class="sd">            vendorcredit: A Vendor Credit object with the required fields filled in.</span>
+<span class="sd">            vendorCredit: A Vendor Credit object with the required fields filled in.</span>
 
 <span class="sd">        Returns:</span>
 <span class="sd">            The newly created Vendor Credit&#39;s ID.</span>
@@ -244,8 +309,24 @@
 <span class="sd">        Raises:</span>
 <span class="sd">            ServerResponseError</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__request</span><span class="p">(</span><span class="s">&#39;create_vendorcredit&#39;</span><span class="p">,</span> <span class="n">vendorcredit</span><span class="o">.</span><span class="n">xml</span><span class="p">())</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__request</span><span class="p">(</span><span class="s">&#39;create_vendorcredit&#39;</span><span class="p">,</span> <span class="n">vendorCredit</span><span class="o">.</span><span class="n">xml</span><span class="p">())</span>
         <span class="k">return</span> <span class="n">result</span><span class="o">.</span><span class="n">getElementsByTagName</span><span class="p">(</span><span class="s">&#39;id&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">firstChild</span><span class="o">.</span><span class="n">data</span>
+</div>
+<div class="viewcode-block" id="Session.set_external_id"><a class="viewcode-back" href="../../index.html#billdotcom.session.Session.set_external_id">[docs]</a>    <span class="k">def</span> <span class="nf">set_external_id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">id</span><span class="p">,</span> <span class="n">externalId</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Sets the external id for an object on Bill.com&#39;s side.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            id: The id of the object on Bill.com&#39;s side.</span>
+<span class="sd">            externalId: The custom id to set.</span>
+
+<span class="sd">        Returns:</span>
+<span class="sd">            The DOM from the request.</span>
+
+<span class="sd">        Raises:</span>
+<span class="sd">            ServerResponseError</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">custom_request</span><span class="p">(</span><span class="s">&#39;set_external_id&#39;</span><span class="p">,</span> <span class="nb">id</span><span class="o">=</span><span class="nb">id</span><span class="p">,</span> <span class="n">externalId</span><span class="o">=</span><span class="n">externalId</span><span class="p">)</span>
+
 </div>
 <div class="viewcode-block" id="Session.get_list"><a class="viewcode-back" href="../../index.html#billdotcom.session.Session.get_list">[docs]</a>    <span class="k">def</span> <span class="nf">get_list</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">object_name</span><span class="p">,</span> <span class="n">filters</span><span class="o">=</span><span class="p">[],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Gets data back from the server. Filters can be used to select specific objects by fields.</span>
@@ -254,7 +335,7 @@
 <span class="sd">        Args:</span>
 <span class="sd">            object_name: The type of object to list. Supported object types and their mappings:</span>
 <span class="sd">                * &quot;bill&quot; for Bill objects</span>
-<span class="sd">                * &quot;chartOfAccount&quot; for ChartOfAccount objects</span>
+<span class="sd">                * &quot;chartofaccount&quot; for ChartOfAccount objects</span>
 <span class="sd">                * &quot;customer&quot; for Customer objects</span>
 <span class="sd">                * &quot;invoice&quot; for Invoice objects</span>
 <span class="sd">                * &quot;item&quot; for Item objects</span>
@@ -290,8 +371,10 @@
             <span class="s">&quot;vendorcredit&quot;</span><span class="p">:</span> <span class="n">VendorCredit</span><span class="p">,</span>
         <span class="p">}</span>
 
-        <span class="n">rename_dict</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="s">&quot;chartofaccount&quot;</span><span class="p">:</span> <span class="s">&#39;chartOfAccount&#39;</span>
+        <span class="c"># some stuff doesn&#39;t work right unless it&#39;s the right case...</span>
+        <span class="n">name_mapper</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s">&quot;vendorcredit&quot;</span><span class="p">:</span> <span class="s">&quot;vendorCredit&quot;</span><span class="p">,</span>
+            <span class="s">&quot;chartofaccount&quot;</span><span class="p">:</span> <span class="s">&quot;chartOfAccount&quot;</span>
         <span class="p">}</span>
 
         <span class="k">if</span> <span class="n">object_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">object_mapper</span><span class="p">:</span>
@@ -344,12 +427,9 @@
         <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__get_result_or_fail</span><span class="p">(</span><span class="n">response</span><span class="p">,</span> <span class="n">transaction</span><span class="p">)</span>
 
         <span class="n">constructor</span> <span class="o">=</span> <span class="n">object_mapper</span><span class="p">[</span><span class="n">object_name</span><span class="p">]</span>
+        <span class="n">root_name</span> <span class="o">=</span> <span class="n">name_mapper</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">object_name</span><span class="p">,</span> <span class="n">object_name</span><span class="p">)</span>
 
-        <span class="c"># gross</span>
-        <span class="k">if</span> <span class="n">object_name</span> <span class="ow">in</span> <span class="n">rename_dict</span><span class="p">:</span>
-            <span class="n">object_name</span> <span class="o">=</span> <span class="n">rename_dict</span><span class="p">[</span><span class="n">object_name</span><span class="p">]</span>
-
-        <span class="n">object_data</span> <span class="o">=</span> <span class="p">[</span><span class="n">constructor</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">getElementsByTagName</span><span class="p">(</span><span class="n">object_name</span><span class="p">)]</span>
+        <span class="n">object_data</span> <span class="o">=</span> <span class="p">[</span><span class="n">constructor</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">getElementsByTagName</span><span class="p">(</span><span class="n">root_name</span><span class="p">)]</span>
         <span class="k">return</span> <span class="n">object_data</span>
 </div>
     <span class="k">def</span> <span class="nf">__enter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
