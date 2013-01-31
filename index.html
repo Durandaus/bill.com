@@ -56,31 +56,15 @@
 <div class="section" id="module-billdotcom.config">
 <span id="configuration"></span><h1>Configuration<a class="headerlink" href="#module-billdotcom.config" title="Permalink to this headline">¶</a></h1>
 <p>Global definitions, configuration and logging.</p>
-<dl class="docutils">
-<dt>The default configuration file must contain the following structure:</dt>
-<dd><ul class="first last">
-<li><dl class="first docutils">
-<dt>authorization</dt>
-<dd><ul class="first last simple">
-<li>appkey: the application key from Bill.com</li>
-<li>email: your user&#8217;s email address</li>
-<li>password: your user&#8217;s password</li>
-</ul>
-</dd>
-</dl>
-</li>
-<li><dl class="first docutils">
-<dt>organization</dt>
-<dd><ul class="first last simple">
-<li>name: the name of your organization</li>
-<li>id: the id for your organization. Obtain with the <cite>billdotcom_getorglist</cite> script.</li>
-</ul>
-</dd>
-</dl>
-</li>
-</ul>
-</dd>
-</dl>
+<p>The default configuration file (<cite>billdotcom.cfg</cite>) must contain the following:</p>
+<div class="highlight-python"><pre>[authorization]
+appkey = the application key from Bill.com
+email = your user's email address
+password = your user's password
+[organization]
+name = the name of your organization
+id = the id for your organization. Obtain with the `billdotcom_getorglist` script.</pre>
+</div>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
 <p class="last">The environment variable BILLDOTCOM_PREFIX can be used to control the location of
@@ -614,6 +598,70 @@ assigning amounts among individual line items.</p>
 </dd>
 <dt>Retrieval:</dt>
 <dd>See the <a class="reference internal" href="#billdotcom.vendorcredit.VendorCredit" title="billdotcom.vendorcredit.VendorCredit"><tt class="xref py py-class docutils literal"><span class="pre">billdotcom.vendorcredit.VendorCredit</span></tt></a> class for how you can retrieve vendor credits.</dd>
+</dl>
+</dd></dl>
+
+<span class="target" id="module-billdotcom.chartofaccount"></span><dl class="class">
+<dt id="billdotcom.chartofaccount.ChartOfAccount">
+<em class="property">class </em><tt class="descclassname">billdotcom.chartofaccount.</tt><tt class="descname">ChartOfAccount</tt><big>(</big><em>ignore_required=False</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/billdotcom/chartofaccount.html#ChartOfAccount"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#billdotcom.chartofaccount.ChartOfAccount" title="Permalink to this definition">¶</a></dt>
+<dd><p>This models the Chart of Account object. This is a mapping
+of the account type.</p>
+<dl class="docutils">
+<dt>Required:</dt>
+<dd><p class="first">name (str): The name of the account (i.e. Checking)
+accountType (enum): Type of Account (This is not required in the API, but fails if not passed)</p>
+<blockquote class="last">
+<div>Unspecified = 0
+Accounts Payable = 1
+Accounts Receivable = 2
+Bank = 3
+Cost of Goods Sold = 4
+Credit Card = 5
+Equity = 6
+Expenses = 7
+Fixed Assed = 8
+Income = 9
+Long Term Liability = 10
+Other Asset = 11
+Other Current Asset = 12
+Other Current Liability = 13
+Other Expense = 14
+Other Income = 15
+Non-Posting = 16</div></blockquote>
+</dd>
+<dt>Optional:</dt>
+<dd><p class="first">accountNumber (str): The account number
+description (str): Description of the accont
+parentChartOfAccountId (ChartOfAccountId): The parent chart of account
+integrationId (str): The ID of the record in an accounting system like QuickBooks.
+externalId (str): The external id of this account.
+createdTime (datetime): The create date.
+updatedTime (datetime): The last update date.
+lastSyncTime (SettableDateTime): The last time this object was synced.
+isActive (enum): Whether or not this chart of account is active.</p>
+<blockquote class="last">
+<div>1 = active
+2 = inactive</div></blockquote>
+</dd>
+<dt>Creation:</dt>
+<dd><p class="first">Create a Chart of Account object and create it on the server side with
+with <tt class="xref py py-func docutils literal"><span class="pre">billdotcom.session.Session.create_chartofaccount()</span></tt>. For example:</p>
+<div class="last highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">Session</span><span class="p">()</span> <span class="k">as</span> <span class="n">s</span><span class="p">:</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">a</span> <span class="o">=</span> <span class="n">ChartOfAccount</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s">&quot;My Credit Card&quot;</span><span class="p">,</span> 
+<span class="go">        &gt;&gt;&gt;                accountType=5,</span>
+<span class="go">        &gt;&gt;&gt;                )</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="n">a</span><span class="p">[</span><span class="s">&#39;id&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">s</span><span class="o">.</span><span class="n">create</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd>
+<dt>Retrieval:</dt>
+<dd><p class="first">Download a list of Chart of Account objects from the server with the Session.
+For example:</p>
+<div class="last highlight-python"><div class="highlight"><pre><span class="gp">&gt;&gt;&gt; </span><span class="k">with</span> <span class="n">Session</span><span class="p">()</span> <span class="k">as</span> <span class="n">s</span><span class="p">:</span>
+<span class="gp">&gt;&gt;&gt; </span>    <span class="k">print</span> <span class="p">[</span><span class="n">x</span><span class="p">[</span><span class="s">&#39;id&#39;</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">s</span><span class="o">.</span><span class="n">list</span><span class="p">(</span><span class="s">&#39;ChartOfAccount&#39;</span><span class="p">)]</span>
+</pre></div>
+</div>
+</dd>
 </dl>
 </dd></dl>
 
